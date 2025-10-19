@@ -195,9 +195,6 @@ class REST_API {
 			$client = new OpenAI_Client( $api_key );
 			return $client->stream_chat( $model, $messages, $tools_manager );
 		} catch ( \Exception $e ) {
-			// Log the error for debugging.
-			error_log( 'AI Ability Toolkit error: ' . $e->getMessage() );
-
 			// Return user-friendly error.
 			$error_message = $e->getMessage();
 			$status_code = 500;

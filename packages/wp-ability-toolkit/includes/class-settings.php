@@ -91,16 +91,13 @@ class Settings {
 			$encrypted = openssl_encrypt( $value, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag );
 
 			if ( false === $encrypted ) {
-				error_log( 'WP Ability Toolkit: Failed to encrypt API key' );
 				return '';
 			}
 
 			return base64_encode( $iv . $tag . $encrypted );
 		}
 
-		// No encryption available - log warning and store obfuscated.
-		// Note: This is a development toolkit for local use, but we still warn.
-		error_log( 'WP Ability Toolkit: No encryption available. API key will be stored with basic obfuscation only.' );
+		// No encryption available - store obfuscated.
 		return base64_encode( $value );
 	}
 
@@ -120,7 +117,6 @@ class Settings {
 		$data = base64_decode( $encrypted_value );
 
 		if ( false === $data ) {
-			error_log( 'WP Ability Toolkit: Failed to decode API key - invalid base64' );
 			return '';
 		}
 
@@ -157,11 +153,11 @@ class Settings {
 		// Fallback: simple base64 decoding for development.
 		$decoded = base64_decode( $encrypted_value, true );
 		if ( false !== $decoded ) {
-			error_log( 'WP Ability Toolkit: API key stored with basic encoding - please re-save for better security' );
 			return $decoded;
 		}
 
-		error_log( 'WP Ability Toolkit: Failed to decrypt API key - encryption format may have changed. Please re-enter your API key in settings.' );
+		// Critical security error - unable to decrypt API key.
+		error_log( 'WP Ability Toolkit: Failed to decrypt API key - please re-enter your API key in settings.' );
 		return '';
 	}
 

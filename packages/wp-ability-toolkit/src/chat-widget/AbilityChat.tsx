@@ -13,7 +13,6 @@ import {
 import { Icon } from '@wordpress/components';
 import { copy, check } from '@wordpress/icons';
 import {
-	AgentUI,
 	AgentUIContainer,
 	AgentUIConversationView,
 	AgentUIMessages,
@@ -26,35 +25,33 @@ import {
 	useWordPressChat,
 	copyToClipboard,
 } from '@emdashcodes/agenttic-ai-sdk-bridge';
-import { retrieveNavigationState, clearNavigationState } from '../abilities';
+import { retrieveContinuation, clearContinuation } from '../utils/continuation';
 import { debug } from '../debug';
 import { ChatHeader } from './ChatHeader';
 
 /**
- * Get the message to send for navigation completion
+ * Get the message to send for continuation completion
  * Returns structured JSON payload that will be sent as context
  */
-function getNavigationCompletionMessage(): string {
+function getContinuationCompletionMessage(type: 'navigate' | 'reload'): string {
 	const payload = {
-		type: 'navigation-complete',
+		type: `${type}-complete`,
 		success: true,
-		message: `I have navigated to ${window.location.pathname}. The page has loaded successfully.`,
+		message:
+			type === 'navigate'
+				? `I have navigated to ${window.location.pathname}. The page has loaded successfully.`
+				: `The page has been reloaded successfully.`,
 		path: window.location.pathname,
 	};
 	return JSON.stringify(payload);
 }
 
 export function AbilityChat() {
-	// Track if we've already sent the continuation message
 	const continuationSentRef = useRef(false);
-
-	// Track which message was just copied (to show checkmark)
 	const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
-
-	// Track chat open state
 	const [isExpanded, setIsExpanded] = useState(() => {
 		return (
-			retrieveNavigationState() !== null ||
+			retrieveContinuation() !== null ||
 			localStorage.getItem('wp-ability-toolkit-chat-open') === 'true'
 		);
 	});
@@ -67,38 +64,24 @@ export function AbilityChat() {
 		conversationStorageKey: 'wp-ability-toolkit-chat',
 	});
 
-	// Log initial state on mount
-	useEffect(() => {
-		debug('[Ability Toolkit] Chat initialized');
-		debug('[Ability Toolkit] Should expand:', isExpanded);
-		debug(
-			'[Ability Toolkit] Navigation state exists:',
-			retrieveNavigationState() !== null
-		);
-		debug(
-			'[Ability Toolkit] Chat open flag:',
-			localStorage.getItem('wp-ability-toolkit-chat-open')
-		);
-		debug(
-			'[Ability Toolkit] Conversation storage:',
-			localStorage.getItem('wp-ability-toolkit-chat')?.substring(0, 200)
-		);
-	}, [isExpanded]);
 
-	// Check for pending navigation and continue conversation with stored tool call
+	// Check for pending continuation (navigate/reload) and continue conversation
 	useEffect(() => {
 		// Skip if we've already sent the message
 		if (continuationSentRef.current) {
 			return;
 		}
 
-		const pendingNav = retrieveNavigationState();
-		if (!pendingNav) {
-			debug('[Ability Toolkit] No pending navigation detected');
+		const pendingContinuation = retrieveContinuation();
+		if (!pendingContinuation) {
+			debug('[Ability Toolkit] No pending continuation detected');
 			return;
 		}
 
-		debug('[Ability Toolkit] Pending navigation detected:', pendingNav);
+		debug(
+			'[Ability Toolkit] Pending continuation detected:',
+			pendingContinuation
+		);
 
 		// Wait for chat to be fully initialized
 		if (chatProps.isLoading) {
@@ -113,23 +96,26 @@ export function AbilityChat() {
 
 		// Mark as sent BEFORE calling the async function to prevent duplicate sends
 		continuationSentRef.current = true;
-		// Clear the navigation state to prevent re-detection
-		clearNavigationState();
+		// Clear the continuation state to prevent re-detection
+		clearContinuation();
 
 		const continueWithStoredToolCall = async () => {
 			try {
 				// Check if we have stored continuation data (new optimized flow)
-				if (pendingNav.assistantMessage && pendingNav.toolResult) {
+				if (
+					pendingContinuation.assistantMessage &&
+					pendingContinuation.toolResult
+				) {
 					debug(
 						'[Ability Toolkit] Found stored tool call, continuing conversation'
 					);
 					debug(
 						'[Ability Toolkit] Assistant message:',
-						pendingNav.assistantMessage
+						pendingContinuation.assistantMessage
 					);
 					debug(
 						'[Ability Toolkit] Tool result:',
-						pendingNav.toolResult
+						pendingContinuation.toolResult
 					);
 
 					// Use the new continueWithToolResult method
@@ -137,11 +123,11 @@ export function AbilityChat() {
 						typeof chatProps.continueWithToolResult === 'function'
 					) {
 						await chatProps.continueWithToolResult(
-							pendingNav.assistantMessage,
-							pendingNav.toolResult
+							pendingContinuation.assistantMessage,
+							pendingContinuation.toolResult
 						);
 						debug(
-							'[Ability Toolkit] Navigation continuation completed'
+							`[Ability Toolkit] ${pendingContinuation.continuationType} continuation completed`
 						);
 					} else {
 						console.error(
@@ -154,7 +140,9 @@ export function AbilityChat() {
 						'[Ability Toolkit] No stored tool call, using fallback continuation'
 					);
 					const continuationMessage =
-						getNavigationCompletionMessage();
+						getContinuationCompletionMessage(
+							pendingContinuation.continuationType
+						);
 
 					if (typeof chatProps.onSubmit === 'function') {
 						debug(
@@ -213,7 +201,8 @@ export function AbilityChat() {
 
 				// Don't show copy button if there's no text content to copy
 				const hasTextContent = message.content?.some(
-					(c) => c.type === 'text' && c.text && c.text.trim().length > 0
+					(c) =>
+						c.type === 'text' && c.text && c.text.trim().length > 0
 				);
 
 				if (!hasTextContent) {
@@ -266,7 +255,11 @@ export function AbilityChat() {
 				chatProps.unregisterMessageActions('copy-message');
 			}
 		};
-	}, [chatProps.registerMessageActions, chatProps.unregisterMessageActions, copiedMessageId]);
+	}, [
+		chatProps.registerMessageActions,
+		chatProps.unregisterMessageActions,
+		copiedMessageId,
+	]);
 
 	// Compute messages with actions applied
 	const messagesWithActions = useMemo(() => {
@@ -289,7 +282,6 @@ export function AbilityChat() {
 		});
 	}, [chatProps.messages, chatProps.messageActionsRegistrations]);
 
-	// Handle clear conversation with confirmation
 	const handleClear = useCallback(() => {
 		if (
 			window.confirm(
@@ -300,13 +292,11 @@ export function AbilityChat() {
 		}
 	}, [chatProps]);
 
-	// Handle minimize/close
 	const handleClose = useCallback(() => {
 		setIsExpanded(false);
 		localStorage.setItem('wp-ability-toolkit-chat-open', 'false');
 	}, []);
 
-	// Handle expand
 	const handleExpand = useCallback(() => {
 		setIsExpanded(true);
 		localStorage.setItem('wp-ability-toolkit-chat-open', 'true');
@@ -330,7 +320,10 @@ export function AbilityChat() {
 				className="agenttic"
 			>
 				<AgentUIConversationView className="with-custom-header">
-					<ChatHeader onClear={handleClear} onMinimize={handleClose} />
+					<ChatHeader
+						onClear={handleClear}
+						onMinimize={handleClose}
+					/>
 					<div
 						className="conversation-content"
 						style={{

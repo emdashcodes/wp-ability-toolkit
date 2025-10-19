@@ -12,13 +12,16 @@ import { reloadAbility } from './reload';
 import { debug } from '../debug';
 
 /**
- * Re-export navigation utilities for use in other modules
+ * Re-export continuation utilities for use in other modules
+ * (for backward compatibility and global registration)
  */
 export {
-	retrieveNavigationState,
-	clearNavigationState,
-	storeNavigationContinuation,
-} from './navigate';
+	retrieveContinuation,
+	clearContinuation,
+	storeContinuationData,
+	type ContinuationState,
+	type ContinuationType,
+} from '../utils/continuation';
 
 /**
  * Register all Ability Toolkit abilities

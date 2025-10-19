@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"jsx": "react",
+		"jsx": "react-jsx",
 		"module": "esnext",
 		"target": "es2015",
 		"lib": ["dom", "dom.iterable", "esnext"],
@@ -16,6 +16,7 @@
 		"noEmit": true,
 		"baseUrl": ".",
 		"paths": {
+			"@wordpress/abilities": ["vendor/wordpress/abilities-api/packages/client/build-types"],
 			"@wordpress/*": ["../../node_modules/@wordpress/*/src"],
 			"*": ["node_modules/*"]
 		}

@@ -310,9 +310,6 @@ export function useWordPressChat(
 			assistantMessage: WordPressMessage,
 			toolResult: WordPressMessage
 		) => {
-			debug('[WordPress Chat] ===== CONTINUATION START =====');
-			debug('[WordPress Chat] Current messages:', messages.length);
-
 			setIsProcessing(true);
 			setError(null);
 
@@ -326,8 +323,6 @@ export function useWordPressChat(
 					assistantMessage,
 					toolResult,
 				];
-
-				debug('[WordPress Chat] Sending continuation request');
 
 				// Create streaming message updater
 				const [updateStreamingMessage] =
@@ -349,7 +344,6 @@ export function useWordPressChat(
 					updateStreamingMessage
 				);
 
-				debug('[WordPress Chat] ===== CONTINUATION COMPLETE =====');
 				setIsProcessing(false);
 			} catch (err) {
 				if (err instanceof Error && err.name === 'AbortError') {
@@ -429,7 +423,6 @@ export function useWordPressChat(
 		setSuggestions([]);
 		if (conversationStorageKey) {
 			localStorage.removeItem(conversationStorageKey);
-			debug('[useWordPressChat] Conversation cleared');
 		}
 	}, [conversationStorageKey, setMessages]);
 

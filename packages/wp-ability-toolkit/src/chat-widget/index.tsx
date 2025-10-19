@@ -4,30 +4,24 @@
  */
 
 import './ChatWidgetElement';
-import { registerAbilities, storeNavigationContinuation } from '../abilities';
+import { registerAbilities, storeContinuationData } from '../abilities';
 
-// Expose storeNavigationContinuation globally for useWordPressChat to access
 declare global {
 	interface Window {
-		__wpAbilityToolkit_storeNavigationContinuation?: typeof storeNavigationContinuation;
+		__wpAbilityToolkit_storeNavigationContinuation?: typeof storeContinuationData;
 	}
 }
 
 async function init() {
-	// Register all abilities BEFORE creating the chat widget
-	// This ensures abilities are available when the chat loads them
 	await registerAbilities();
 
-	// Expose navigation continuation function for cross-package access
 	window.__wpAbilityToolkit_storeNavigationContinuation =
-		storeNavigationContinuation;
+		storeContinuationData;
 
-	// Now create and mount the chat widget
 	const chatWidget = document.createElement('ability-chat-widget');
 	document.body.appendChild(chatWidget);
 }
 
-// Initialize when DOM is ready
 if (document.readyState === 'loading') {
 	document.addEventListener('DOMContentLoaded', init);
 } else {

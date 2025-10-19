@@ -116,9 +116,7 @@ export class ChatWidgetElement extends HTMLElement {
 
 	private getCssUrls(): string[] {
 		const pluginUrl = window.wpAbilityToolkit?.pluginUrl || '';
-		debug('[Ability Chat] Plugin URL:', pluginUrl);
 		const cssUrl = `${pluginUrl}/build/chat-widget/index.css`;
-		debug('[Ability Chat] Loading CSS from:', cssUrl);
 		return [cssUrl];
 	}
 
