@@ -97,7 +97,20 @@ A meta-ability that guides users through creating new WordPress Abilities. This 
 
 ## Claude Code Marketplace
 
-This repository includes a Claude Code marketplace with specialized skills for WordPress development:
+This repository includes a Claude Code marketplace with specialized skills for WordPress development.
+
+### What are Claude Code Skills?
+
+**Agent Skills** are modular capabilities that extend Claude's functionality with specialized knowledge, workflows, and tools. Think of them as "onboarding guides" that transform Claude from a general-purpose assistant into a specialized expert for specific domains.
+
+**How Skills work:**
+
+- **Model-invoked** - Claude autonomously decides when to use a skill based on your request and the skill's description
+- **Self-contained packages** - Each skill includes instructions (SKILL.md), optional scripts, reference documentation, and assets
+- **Progressive disclosure** - Skills load only what's needed: metadata is always available, instructions load when triggered, and resources load as needed
+- **Composable** - Multiple skills can work together to handle complex workflows
+
+For more about Agent Skills, see [Claude Code Skills documentation](https://docs.claude.com/en/docs/claude-code/skills).
 
 ### Installation
 
@@ -195,11 +208,11 @@ You can also ask it to activate the skills manually if needed.
 ## Architecture
 
 - **`packages/`** - WordPress plugin packages (pnpm monorepo)
-  - `wp-ability-toolkit` - WordPress plugin with PHP backend and React frontend
-  - `agenttic-ai-sdk-bridge` - TypeScript bridge connecting WordPress REST API with Agenttic UI
+    - `wp-ability-toolkit` - WordPress plugin with PHP backend and React frontend
+    - `agenttic-ai-sdk-bridge` - TypeScript bridge connecting WordPress REST API with Agenttic UI
 - **`claude-code-plugins/`** - Claude Code marketplace skills
-  - `wordpress-ability-api` - Ability scaffolding and validation
-  - `wordpress-plugin-scaffold` - WP-CLI plugin scaffolding
+    - `wordpress-ability-api` - Ability scaffolding and validation
+    - `wordpress-plugin-scaffold` - WP-CLI plugin scaffolding
 
 ### Technology Stack
 
