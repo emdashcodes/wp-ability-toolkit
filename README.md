@@ -380,7 +380,7 @@ This hook is only meant for testing and debugging Abilities. If you want to ship
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit a Pull Request. See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
 ## Credits
 

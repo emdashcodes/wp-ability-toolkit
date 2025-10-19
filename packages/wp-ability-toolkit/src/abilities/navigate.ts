@@ -36,6 +36,11 @@ export const navigateAbility: Ability = {
 				description:
 					'The complete wp-admin path. MUST start with "/wp-admin/" and include the .php file. Common examples: "/wp-admin/index.php" (dashboard), "/wp-admin/plugins.php" (plugins), "/wp-admin/themes.php" (themes), "/wp-admin/users.php" (users), "/wp-admin/options-general.php" (general settings), "/wp-admin/edit.php" (posts).',
 			},
+			label: {
+				type: 'string',
+				description:
+					'Optional friendly label to display in the chat UI (e.g., "Plugins Page", "Settings", "Dashboard"). This will be shown as "Navigated to [label]" in the chat.',
+			},
 		},
 		required: ['path'],
 		additionalProperties: false,
@@ -47,9 +52,10 @@ export const navigateAbility: Ability = {
 				type: 'boolean',
 				description: 'Whether navigation was initiated successfully',
 			},
-			message: {
+			label: {
 				type: 'string',
-				description: 'Confirmation message or error details',
+				description:
+					'Friendly label to display in the chat UI (e.g., "Plugins Page", "Settings", "Dashboard"). This will be shown as "Navigated to [label]" in the chat.',
 			},
 			error: {
 				type: 'string',
@@ -57,8 +63,8 @@ export const navigateAbility: Ability = {
 			},
 		},
 	},
-	callback: async (input: { path: string }) => {
-		const { path } = input;
+	callback: async (input: { path: string; label?: string }) => {
+		const { path, label } = input;
 
 		// Validate that path is provided
 		if (!path || typeof path !== 'string') {
@@ -91,7 +97,7 @@ export const navigateAbility: Ability = {
 
 		return {
 			success: true,
-			message: `Navigating to ${path}...`,
+			label, // Pass through the label for display in chat UI
 			_skipContinuation: true, // Signal to useWordPressChat to skip continuation request
 		};
 	},

@@ -48,6 +48,8 @@ export function storeContinuation(
 		destination,
 		timestamp: Date.now(),
 		continuationType: type,
+		// Store initiating URL for validation
+		initiatingUrl: window.location.href,
 	};
 	localStorage.setItem(CONTINUATION_STORAGE_KEY, JSON.stringify(state));
 }
@@ -140,54 +142,10 @@ export function retrieveContinuation(): ContinuationState | null {
 					clearContinuation();
 					return null;
 				}
-
-				// For reload, check TWO conditions:
-				// 1. The sessionStorage flag was set (indicates reload was initiated)
-				// 2. The page was actually reloaded (browser navigation type check)
-				const reloadPending = sessionStorage.getItem(
-					'wp-ability-toolkit-reload-pending'
+				// For reload, URL doesn't change so just continue
+				debug(
+					'[Ability Toolkit] Reload confirmed - continuing conversation'
 				);
-
-				// Check if page was loaded via reload (not initial navigation)
-				// Use Navigation Timing API to detect reload
-				let wasReloaded = false;
-				try {
-					const navEntries = performance.getEntriesByType(
-						'navigation'
-					) as PerformanceNavigationTiming[];
-					if (navEntries.length > 0) {
-						wasReloaded = navEntries[0].type === 'reload';
-					}
-				} catch {
-					// Fallback: assume reload if flag exists (less reliable)
-					debug(
-						'[Ability Toolkit] Navigation API not available, using fallback'
-					);
-					wasReloaded = true;
-				}
-
-				debug('[Ability Toolkit] - Reload pending flag:', !!reloadPending);
-				debug('[Ability Toolkit] - Page was reloaded:', wasReloaded);
-
-				if (reloadPending === 'true' && wasReloaded) {
-					// Both conditions met: reload was initiated AND page was actually reloaded
-					sessionStorage.removeItem('wp-ability-toolkit-reload-pending');
-					debug(
-						'[Ability Toolkit] Reload confirmed - continuing conversation'
-					);
-				} else {
-					// Either flag missing or page wasn't reloaded yet
-					if (reloadPending && !wasReloaded) {
-						debug(
-							'[Ability Toolkit] Skipping continuation - reload initiated but page not reloaded yet'
-						);
-					} else if (!reloadPending) {
-						debug(
-							'[Ability Toolkit] Skipping continuation - no reload flag found'
-						);
-					}
-					return null;
-				}
 			}
 		}
 

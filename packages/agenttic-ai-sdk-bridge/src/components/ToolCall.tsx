@@ -29,8 +29,10 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 	const [copiedInfo, setCopiedInfo] = useState(false);
 	const [copiedThought, setCopiedThought] = useState(false);
 
-	// Special rendering for think ability
+	// Special rendering for certain Abilities
 	const isThinkAbility = toolCall.name === 'wp-ability-toolkit/think';
+	const isNavigateAbility = toolCall.name === 'wp-ability-toolkit/navigate';
+	const isReloadAbility = toolCall.name === 'wp-ability-toolkit/reload';
 
 	if (isThinkAbility) {
 		const thought =
@@ -117,7 +119,9 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 						>
 							<ReactMarkdown>{thought}</ReactMarkdown>
 						</div>
-						<Tooltip text={copiedThought ? 'Copied!' : 'Copy thought'}>
+						<Tooltip
+							text={copiedThought ? 'Copied!' : 'Copy thought'}
+						>
 							<Button
 								icon={copiedThought ? check : copySmall}
 								size="small"
@@ -151,6 +155,62 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 						}
 					}
 				`}</style>
+			</div>
+		);
+	}
+
+	// Special rendering for navigate/reload abilities
+	if (isNavigateAbility || isReloadAbility) {
+		const label =
+			toolCall.output &&
+			typeof toolCall.output === 'object' &&
+			'label' in toolCall.output
+				? (toolCall.output as { label: string }).label
+				: null;
+
+		const isComplete = toolCall.status === 'success';
+
+		// Only show if complete
+		if (!isComplete) {
+			return null;
+		}
+
+		// Determine text to display
+		let displayText: string;
+		if (label) {
+			const prefix = isNavigateAbility ? 'Navigated to' : 'Reloaded';
+			displayText = `${prefix} ${label}`;
+		} else {
+			displayText = isNavigateAbility ? 'Navigated' : 'Reloaded';
+		}
+
+		return (
+			<div
+				style={{
+					marginTop: '8px',
+					marginBottom: '8px',
+					padding: '0',
+					fontFamily:
+						'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
+					fontSize: '13px',
+					color: '#757575',
+					textAlign: 'center',
+					borderTop: '1px solid #dcdcde',
+					borderBottom: '1px solid #dcdcde',
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center',
+					gap: '8px',
+				}}
+			>
+				<span
+					style={{
+						padding: '6px 0',
+						fontStyle: 'italic',
+					}}
+				>
+					{displayText}
+				</span>
 			</div>
 		);
 	}
@@ -308,7 +368,10 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 									onClick={(e: React.MouseEvent) => {
 										e.stopPropagation();
 										const infoText = `${toolCall.name}\nID: ${toolCall.id}`;
-										copyToClipboard(infoText, setCopiedInfo);
+										copyToClipboard(
+											infoText,
+											setCopiedInfo
+										);
 									}}
 									style={{
 										minWidth: 'auto',

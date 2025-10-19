@@ -29,7 +29,13 @@ export const reloadAbility: Ability = {
 	category: 'navigation',
 	input_schema: {
 		type: 'object',
-		properties: {},
+		properties: {
+			label: {
+				type: 'string',
+				description:
+					'Optional friendly label to display in the chat UI (e.g., "Settings Page", "Current Page"). This will be shown as "Reloaded [label]" in the chat.',
+			},
+		},
 	},
 	output_schema: {
 		type: 'object',
@@ -38,16 +44,15 @@ export const reloadAbility: Ability = {
 				type: 'boolean',
 				description: 'Whether the reload was initiated',
 			},
-			message: {
+			label: {
 				type: 'string',
-				description: 'Confirmation message',
+				description:
+					'Friendly label to display in the chat UI (e.g., "Settings Page", "Current Page"). This will be shown as "Reloaded [label]" in the chat.',
 			},
 		},
 	},
-	callback: async () => {
-		// Set a flag that will be checked after reload to confirm it happened
-		// sessionStorage persists across reload but not navigation
-		sessionStorage.setItem('wp-ability-toolkit-reload-pending', 'true');
+	callback: async (input: { label?: string } = {}) => {
+		const { label } = input;
 
 		// Store continuation state for post-reload detection
 		storeContinuation(window.location.href, 'reload');
@@ -55,17 +60,15 @@ export const reloadAbility: Ability = {
 		// Store chat open state so it reopens after reload
 		localStorage.setItem('wp-ability-toolkit-chat-open', 'true');
 
-		// Reload after a delay (800ms) to ensure continuation data is stored
-		// This allows time for the async tool call handler to complete and store
-		// the assistant message + tool result for continuation after reload
+		// Reload after a delay to ensure continuation data is stored
 		setTimeout(() => {
 			window.location.reload();
-		}, 800);
+		}, 300);
 
-		// Signal to useWordPressChat to skip normal continuation request
 		return {
 			success: true,
-			message: 'Reloading page...',
+			message: label ? `Reloading ${label}...` : 'Reloading page...',
+			label, // Pass through the label for display in chat UI
 			_skipContinuation: true,
 		};
 	},
