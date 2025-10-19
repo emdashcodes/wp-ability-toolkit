@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+build/
+dist/
+
+# License files (maintain original formatting)
+LICENSE.md
+LICENSE
+
+# Reference documentation
+**/references/**
+claude-code-plugins/**/references/**

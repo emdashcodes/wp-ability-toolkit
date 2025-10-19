@@ -1,0 +1,21 @@
+# markdownlint-cli2 configuration
+# https://github.com/DavidAnson/markdownlint-cli2
+
+# Globs to include
+globs:
+    - '**/*.md'
+
+# Globs to ignore
+ignores:
+    - '**/node_modules/**'
+    - '**/vendor/**'
+    - '**/build/**'
+    - '**/dist/**'
+    - '**/references/**'
+    - 'claude-code-plugins/**/references/**'
+
+# Configuration file
+config: .markdownlint.json
+
+# Fix mode (set to true to auto-fix)
+fix: false

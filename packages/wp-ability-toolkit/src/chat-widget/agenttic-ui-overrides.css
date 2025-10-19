@@ -1,0 +1,94 @@
+/**
+ * AgenticUI Overrides
+ * Fixes for @automattic/agenttic-ui integration issues
+ */
+
+/* ========================================
+ * Tool Call Width Constraint Fixes
+ * Ensures tool call components don't cause horizontal scrolling
+ * ======================================== */
+
+/* Constrain message content areas */
+.agentui-message-content,
+.agentui-message-content > *,
+[class*="message"] [class*="content"],
+[class*="Message"] [class*="Content"] {
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow-wrap: break-word !important;
+}
+
+/* Ensure component containers don't overflow */
+[class*="component-wrapper"],
+[class*="ComponentWrapper"],
+.component-container {
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Prevent pre/code blocks from overflowing */
+pre,
+code {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  white-space: pre !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure all flex containers allow shrinking */
+[class*="message"] {
+  min-width: 0 !important;
+}
+
+/* Force tool call wrapper to respect container */
+.tool-call-wrapper {
+  max-width: 100% !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* ========================================
+ * Cursor Behavior Fixes
+ * Restrict grab cursor to header only, not entire chat
+ * ======================================== */
+
+/* Remove grab cursor from floating chat container */
+[class*="Chat-module_container"][class*="Chat-module_floating"] {
+  cursor: auto !important;
+}
+
+/* Remove grabbing cursor on active state */
+[class*="Chat-module_container"][class*="Chat-module_floating"]:active {
+  cursor: auto !important;
+}
+
+/* Keep grab cursor only on header */
+[class*="ChatHeader-module_container"] {
+  cursor: grab !important;
+}
+
+[class*="ChatHeader-module_container"]:active {
+  cursor: grabbing !important;
+}
+
+/* Ensure normal cursor on all interactive content */
+[class*="Messages-module_container"],
+[class*="Message-module_message"],
+[class*="ChatFooter-module_container"],
+[class*="ChatInput-module_container"],
+[class*="MessageActions-module_container"],
+button,
+a,
+[role="button"] {
+  cursor: auto !important;
+}
+
+/* Override cursor for specific button states */
+button:not(:disabled),
+a,
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer !important;
+}

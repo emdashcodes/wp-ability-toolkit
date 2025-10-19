@@ -1,0 +1,54 @@
+{
+	"name": "@automattic/agenttic-ai-sdk-bridge",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "Client-side bridge between WordPress REST API and Agenttic UI",
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"scripts": {
+		"build": "pnpm run clean && tsc",
+		"dev": "tsc --watch",
+		"clean": "rm -rf dist",
+		"type-check": "tsc --noEmit"
+	},
+	"keywords": [
+		"wordpress",
+		"agenttic",
+		"ai-sdk",
+		"bridge",
+		"rest-api"
+	],
+	"author": "Em",
+	"license": "MIT",
+	"engines": {
+		"node": ">=20.0.0"
+	},
+	"devDependencies": {
+		"@types/react": "^18.0.0",
+		"@wordpress/data": "^10.33.0",
+		"typescript": "^5.0.0"
+	},
+	"dependencies": {
+		"@wordpress/components": "^30.6.0",
+		"@wordpress/element": "^6.33.0",
+		"@wordpress/icons": "^11.0.0",
+		"react": "^18.0.0"
+	},
+	"peerDependencies": {
+		"@wordpress/components": "^30.0.0",
+		"@wordpress/element": "^6.0.0",
+		"@wordpress/icons": "^11.0.0",
+		"react": "^18.0.0"
+	}
+}

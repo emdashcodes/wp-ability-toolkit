@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+/packages/*/dist
+/packages/*/build
+*.tsbuildinfo
+
+# WordPress
+.wp-env.override.json
+/wordpress
+wp-cli.local.yml
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Testing
+coverage/
+.phpunit.result.cache
+
+# Other
+phpcs.xml
+phpunit.xml
+*.sql
+*.tar.gz
+*.zip

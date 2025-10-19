@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+build/
+dist/
+
+# Minified files
+*.min.js
+*.min.css
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# License files (maintain original formatting)
+LICENSE.md
+LICENSE
+
+# WordPress core
+wp-admin/
+wp-includes/
+
+# Reference documentation (exclude from formatting)
+**/references/**/*.md
+claude-code-plugins/**/references/**
+
+# Template files with placeholders
+**/assets/*-template.js
+claude-code-plugins/**/assets/**
+
+# Compiled files
+*.compiled.js
+*.bundle.js

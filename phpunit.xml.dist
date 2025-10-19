@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd"
+	bootstrap="packages/wp-ability-toolkit/tests/bootstrap.php"
+	colors="true"
+	verbose="true"
+	stopOnFailure="false"
+	beStrictAboutOutputDuringTests="true"
+	beStrictAboutTestsThatDoNotTestAnything="true"
+>
+	<testsuites>
+		<testsuite name="WP Ability Toolkit Test Suite">
+			<directory>./packages/wp-ability-toolkit/tests</directory>
+		</testsuite>
+	</testsuites>
+
+	<coverage processUncoveredFiles="true">
+		<include>
+			<directory suffix=".php">./packages/wp-ability-toolkit/includes</directory>
+		</include>
+		<exclude>
+			<directory>./packages/wp-ability-toolkit/vendor</directory>
+			<directory>./packages/wp-ability-toolkit/tests</directory>
+		</exclude>
+	</coverage>
+
+	<php>
+		<const name="WP_TESTS_PHPUNIT_POLYFILLS_PATH" value="./packages/wp-ability-toolkit/vendor/yoast/phpunit-polyfills"/>
+	</php>
+</phpunit>

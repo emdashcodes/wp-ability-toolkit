@@ -1,0 +1,77 @@
+{
+	"name": "emdashcodes-wp-ability-toolkit",
+	"owner": {
+		"name": "Em",
+		"url": "https://emdash.codes"
+	},
+	"metadata": {
+		"description": "Comprehensive WordPress Ability API development toolkit with specialized Claude Code skills for plugin development, environment management, and ability creation",
+		"version": "1.0.0"
+	},
+	"plugins": [
+		{
+			"name": "wordpress-ability-api",
+			"source": "./claude-code-plugins/wordpress-ability-api",
+			"description": "Create, validate, and register WordPress Abilities (server-side PHP and client-side JavaScript) with comprehensive scaffolding and validation tools",
+			"version": "1.0.0",
+			"author": {
+				"name": "Em"
+			},
+			"repository": "https://github.com/emdashcodes/wp-ability-toolkit",
+			"license": "GPL-2.0-or-later",
+			"keywords": [
+				"wordpress",
+				"abilities-api",
+				"scaffolding",
+				"validation",
+				"ai-agents",
+				"development-tools"
+			],
+			"category": "development-tools",
+			"strict": false,
+			"skills": ["./skills/wordpress-ability-api"]
+		},
+		{
+			"name": "wordpress-plugin-scaffold",
+			"source": "./claude-code-plugins/wordpress-plugin-scaffold",
+			"description": "Scaffold WordPress plugins using WP-CLI commands with intelligent environment detection and comprehensive testing support",
+			"version": "1.0.0",
+			"author": {
+				"name": "Em"
+			},
+			"repository": "https://github.com/emdashcodes/wp-ability-toolkit",
+			"license": "GPL-2.0-or-later",
+			"keywords": [
+				"wordpress",
+				"wp-cli",
+				"plugin-development",
+				"scaffolding",
+				"development-tools"
+			],
+			"category": "development-tools",
+			"strict": false,
+			"skills": ["./skills/wordpress-plugin-scaffold"]
+		},
+		{
+			"name": "wp-env",
+			"source": "./claude-code-plugins/wp-env",
+			"description": "Manage local WordPress development environments using @wordpress/env with Docker for plugin and theme development",
+			"version": "1.0.0",
+			"author": {
+				"name": "Em"
+			},
+			"repository": "https://github.com/emdashcodes/wp-ability-toolkit",
+			"license": "GPL-2.0-or-later",
+			"keywords": [
+				"wordpress",
+				"wp-env",
+				"docker",
+				"local-development",
+				"development-tools"
+			],
+			"category": "development-tools",
+			"strict": false,
+			"skills": ["./skills/wp-env"]
+		}
+	]
+}

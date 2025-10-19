@@ -1,0 +1,267 @@
+<?php
+/**
+ * Main plugin initialization class
+ *
+ * @package WP_Ability_Toolkit
+ */
+
+namespace WP_Ability_Toolkit;
+
+/**
+ * Main plugin class that handles initialization
+ */
+class Plugin {
+	/**
+	 * Plugin version
+	 */
+	const VERSION = '0.1.0';
+
+	/**
+	 * Plugin file path
+	 *
+	 * @var string
+	 */
+	private $plugin_file;
+
+	/**
+	 * Settings instance
+	 *
+	 * @var Settings
+	 */
+	private $settings;
+
+	/**
+	 * REST API instance
+	 *
+	 * @var REST_API
+	 */
+	private $rest_api;
+
+	/**
+	 * Singleton instance
+	 *
+	 * @var Plugin|null
+	 */
+	private static $instance = null;
+
+	/**
+	 * Get singleton instance
+	 *
+	 * @param string $plugin_file Optional. Path to main plugin file.
+	 * @return Plugin
+	 */
+	public static function get_instance( $plugin_file = '' ) {
+		if ( null === self::$instance ) {
+			self::$instance = new self( $plugin_file );
+		}
+		return self::$instance;
+	}
+
+	/**
+	 * Constructor - private for singleton
+	 *
+	 * @param string $plugin_file Path to main plugin file.
+	 */
+	private function __construct( $plugin_file = '' ) {
+		// Store plugin file path.
+		if ( empty( $plugin_file ) ) {
+			$plugin_file = dirname( __DIR__ ) . '/wp-ability-toolkit.php';
+		}
+		$this->plugin_file = $plugin_file;
+
+		// Initialize core components.
+		$this->settings = new Settings();
+		$this->rest_api = new REST_API( $this->settings );
+	}
+
+	/**
+	 * Initialize the plugin
+	 */
+	public function init() {
+		// Register settings.
+		add_action( 'admin_init', array( $this->settings, 'register' ) );
+
+		// Register REST API routes.
+		add_action( 'rest_api_init', array( $this->rest_api, 'register_routes' ) );
+
+		// Add settings page.
+		add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
+
+		// Register Abilities API assets (when installed via Composer).
+		add_action( 'init', array( 'WP_Abilities_Assets_Init', 'register_assets' ) );
+		add_action( 'admin_enqueue_scripts', array( 'WP_Abilities_Assets_Init', 'admin_enqueue_scripts' ) );
+
+		// Enqueue chat widget in admin.
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_chat_widget' ) );
+
+		// Register test categories and abilities.
+		add_action( 'abilities_api_categories_init', array( $this, 'register_test_categories' ) );
+		add_action( 'abilities_api_init', array( $this, 'register_test_abilities' ) );
+
+		// WordPress Ability API integration hook.
+		do_action( 'wp_ability_toolkit_register_abilities' );
+	}
+
+	/**
+	 * Add settings page to WordPress admin
+	 */
+	public function add_settings_page() {
+		add_options_page(
+			__( 'AI Ability Toolkit Settings', 'wp-ability-toolkit' ),
+			__( 'AI Ability Toolkit', 'wp-ability-toolkit' ),
+			'manage_options',
+			'wp-ability-toolkit-settings',
+			array( $this, 'render_settings_page' )
+		);
+	}
+
+	/**
+	 * Render settings page
+	 */
+	public function render_settings_page() {
+		echo '<div id="wp-ability-toolkit-settings-root"></div>';
+	}
+
+	/**
+	 * Enqueue chat widget scripts
+	 *
+	 * @param string $hook Current admin page hook.
+	 */
+	public function enqueue_chat_widget( $hook ) {
+		// Explicitly enqueue WordPress dependencies first.
+		wp_enqueue_script( 'wp-element' );
+		wp_enqueue_script( 'wp-components' );
+		wp_enqueue_style( 'wp-components' );
+
+		// Enqueue widget on all admin pages.
+		// Note: wp-icons is not a real WordPress script handle, icons are bundled.
+		$widget_js_path = dirname( $this->plugin_file ) . '/build/chat-widget/index.js';
+		$widget_css_path = dirname( $this->plugin_file ) . '/build/chat-widget/index.css';
+
+		wp_enqueue_script(
+			'wp-ability-toolkit-chat-widget',
+			plugins_url( 'build/chat-widget/index.js', $this->plugin_file ),
+			array( 'wp-element', 'wp-components' ),
+			filemtime( $widget_js_path ),
+			true
+		);
+
+		wp_enqueue_style(
+			'wp-ability-toolkit-chat-widget',
+			plugins_url( 'build/chat-widget/index.css', $this->plugin_file ),
+			array( 'wp-components' ),
+			filemtime( $widget_css_path )
+		);
+
+		// Localize script with nonce and endpoint.
+		wp_localize_script(
+			'wp-ability-toolkit-chat-widget',
+			'wpAbilityToolkit',
+			array(
+				'nonce'     => wp_create_nonce( 'wp_rest' ),
+				'endpoint'  => rest_url( 'wp-ability-toolkit/v1/chat' ),
+				'pluginUrl' => plugins_url( '', $this->plugin_file ),
+			)
+		);
+
+		// Enqueue settings page script if on settings page.
+		if ( 'settings_page_wp-ability-toolkit-settings' === $hook ) {
+			$settings_js_path = dirname( $this->plugin_file ) . '/build/admin/settings.js';
+
+			wp_enqueue_script(
+				'wp-ability-toolkit-settings',
+				plugins_url( 'build/admin/settings.js', $this->plugin_file ),
+				array( 'wp-element', 'wp-components', 'wp-i18n' ),
+				filemtime( $settings_js_path ),
+				true
+			);
+
+			wp_enqueue_style( 'wp-components' );
+
+			// Localize script for settings page.
+			wp_localize_script(
+				'wp-ability-toolkit-settings',
+				'wpAbilityToolkitSettings',
+				array(
+					'nonce'            => wp_create_nonce( 'wp_rest' ),
+					'settingsEndpoint' => rest_url( 'wp-ability-toolkit/v1/settings' ),
+				)
+			);
+		}
+	}
+
+	/**
+	 * Get settings instance
+	 *
+	 * @return Settings
+	 */
+	public function get_settings() {
+		return $this->settings;
+	}
+
+	/**
+	 * Get REST API instance
+	 *
+	 * @return REST_API
+	 */
+	public function get_rest_api() {
+		return $this->rest_api;
+	}
+
+	/**
+	 * Register test categories
+	 */
+	public function register_test_categories() {
+		wp_register_ability_category(
+			'data-retrieval',
+			array(
+				'label'       => __( 'Data Retrieval', 'wp-ability-toolkit' ),
+				'description' => __( 'Abilities that retrieve and return data without modifying it', 'wp-ability-toolkit' ),
+			)
+		);
+	}
+
+	/**
+	 * Register test abilities for demonstration
+	 */
+	public function register_test_abilities() {
+		// Server-side test ability.
+		wp_register_ability(
+			'wp-ability-toolkit/get-wordpress-info',
+			array(
+				'label'               => __( 'Get WordPress Info', 'wp-ability-toolkit' ),
+				'description'         => __( 'Returns information about the WordPress installation including version, site name, and server time', 'wp-ability-toolkit' ),
+				'category'            => 'data-retrieval',
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(),
+				),
+				'output_schema'       => array(
+					'type'       => 'object',
+					'properties' => array(
+						'site_name'    => array( 'type' => 'string' ),
+						'wp_version'   => array( 'type' => 'string' ),
+						'server_time'  => array( 'type' => 'string' ),
+						'timezone'     => array( 'type' => 'string' ),
+						'admin_email'  => array( 'type' => 'string' ),
+					),
+				),
+				'execute_callback'    => function () {
+					return array(
+						'site_name'   => get_bloginfo( 'name' ),
+						'wp_version'  => get_bloginfo( 'version' ),
+						'server_time' => current_time( 'mysql' ),
+						'timezone'    => wp_timezone_string(),
+						'admin_email' => get_bloginfo( 'admin_email' ),
+					);
+				},
+				'permission_callback' => function () {
+					return is_user_logged_in();
+				},
+				'meta'                => array(
+					'show_in_rest' => true,
+				),
+			)
+		);
+	}
+}
