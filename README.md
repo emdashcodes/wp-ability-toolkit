@@ -2,29 +2,31 @@
 
 A toolkit for WordPress plugin development, testing AI agent integrations, and WordPress Ability API creation. This repository contains:
 
-- **Claude Code Marketplace** - Specialized skills for WordPress development, WordPress environment management, and WordPress Ability creation
-- **Toolkit for WordPress** - A workspace for building WordPress abilities and plugins
+- **Claude Code Marketplace** - Specialized skills for WordPress development, WordPress environment management, and WordPress Ability creation.
+- **Toolkit for WordPress** - A workspace for building WordPress Abilities and plugins.
 
 ## Features
 
-- **Agent for debugging WordPress Abilities** - Includes an agent for WordPress that allows you to test and debug WordPress Abilities and navigate around your WordPress Admin
-- **Core Abilities** - Built-in abilities for navigation, page reloading, structured thinking, and creating new abilities
-- **OpenAI Support** - OpenAI (GPT-4, GPT-4o, GPT-4-turbo)
+- **Agent for debugging WordPress Abilities** - Includes an agent for WordPress that allows you to test and debug WordPress Abilities and navigate around your WordPress Admin.
+- **Bundled Abilities** - Built-in abilities for navigation, page reloading, structured thinking, and guided creation of new abilities
+- **OpenAI Support** - OpenAI (GPT-4, GPT-4o)
 - **Claude Code Skills** - Specialized development skills for plugin creation, validation, and environment management
 
-## Core Abilities
+## WordPress Abilities
 
-The WP Ability Toolkit includes four built-in abilities that provide essential functionality for the AI assistant. These abilities are as important as the Claude Code plugins and demonstrate the power of the WordPress Abilities API.
+The WP Ability Toolkit includes four built-in abilities that provide essential functionality for the AI assistant
 
 ### Navigation & Control
 
 #### `navigate`
+
 **Type:** Client-side (JavaScript)
 **Category:** Navigation
 
 Navigate to different WordPress admin pages. The AI assistant can take you to any wp-admin page with a simple request.
 
 **Example usage:**
+
 - "Take me to the plugins page"
 - "Navigate to settings"
 - "Go to the dashboard"
@@ -32,12 +34,14 @@ Navigate to different WordPress admin pages. The AI assistant can take you to an
 **How it works:** Uses absolute paths (e.g., `/wp-admin/plugins.php`) and handles full page navigation with conversation continuation.
 
 #### `reload`
+
 **Type:** Client-side (JavaScript)
 **Category:** Navigation
 
 Reload the current WordPress admin page. Useful after making changes that require a page refresh, such as activating plugins or registering new abilities.
 
 **Example usage:**
+
 - "Reload the page"
 - "Refresh this page"
 
@@ -46,18 +50,20 @@ Reload the current WordPress admin page. Useful after making changes that requir
 ### Meta Tools - Extending Capabilities
 
 #### `think`
+
 **Type:** Server-side (PHP)
 **Category:** Meta Tools
 
 A structured thinking tool based on [Anthropic's "think" tool pattern](https://www.anthropic.com/engineering/claude-think-tool). Provides dedicated space for the AI to reason through complex problems before taking action.
 
 **When the AI uses it:**
-- Before taking action after receiving tool results
+
 - When breaking down multi-step problems
 - When verifying requirements are met
 - When brainstorming ability designs
 
 **Example (internal AI usage):**
+
 ```
 User: "Activate the contact form plugin"
 AI uses think: "Need to: 1) Navigate to /wp-admin/plugins.php,
@@ -68,17 +74,20 @@ AI uses think: "Need to: 1) Navigate to /wp-admin/plugins.php,
 **Why it matters:** Significantly improves the AI's performance on complex tasks, policy compliance, and multi-step workflows.
 
 #### `create_ability`
+
 **Type:** Server-side (PHP)
 **Category:** Meta Tools
 
 A meta-ability that guides users through creating new WordPress Abilities. This is how you extend the AI assistant's capabilities!
 
 **Example usage:**
+
 - "I want you to be able to activate plugins"
 - "Can you create an ability to check post count?"
 - "Help me create a new ability"
 
 **How it works:**
+
 1. Guides the user through the ability creation process
 2. Provides instructions for using the `wordpress-ability-api` Claude Code skill
 3. Helps craft the right prompt for Claude Code
@@ -100,34 +109,79 @@ Install the marketplace in Claude Code:
 
 ### Available Skills
 
-**wordpress-ability-api** - Create and validate WordPress Abilities
+#### wordpress-ability-api
 
-- Scaffold server-side (PHP) and client-side (JavaScript) abilities
-- Validate ability code with comprehensive checks
-- Generate category registration code
-- Full reference documentation for the WordPress Abilities API
+**What it does:** Guides you through creating, editing, and validating WordPress Abilities. This skill provides scaffolding scripts, validation tools, and comprehensive reference documentation for both server-side PHP and client-side JavaScript abilities.
+
+**When to use it:**
+
+- "Help me create an ability to..."
+- "I want to make an ability that..."
+- "Add the Abilities API as a dependency"
+- "Register an ability category"
+
+**Key features:**
+
+- **Programmatic scaffolding** - `scripts/scaffold-ability.php` generates validated ability code from CLI arguments
+- **Comprehensive validation** - `scripts/validate-ability.php` and `validate-ability.js` check structure, schemas, and best practices
+- **Category support** - `scripts/scaffold-category.php` generates category registration code
+- **Complete reference docs** - 8 reference files covering registration, REST API, JavaScript client, and hooks
+- **Template assets** - Ready-to-customize templates for abilities and categories
+
+**Works well with the other skills:**
+
+- **wordpress-plugin-scaffold** - Scaffold a plugin first, then add abilities to it
+- **wp-env** - Test abilities in a local WordPress environment
+
+**Installation:**
 
 ```bash
 /plugin install wordpress-ability-api@emdashcodes-wp-ability-toolkit
 ```
 
-**wordpress-plugin-scaffold** - Scaffold WordPress plugins with WP-CLI
+#### wordpress-plugin-scaffold
 
-- Create new WordPress plugins with full boilerplate
-- Add test infrastructure to existing plugins
-- Intelligent wp-env environment detection
-- Plugin activation and testing workflows
+**What it does:** Automates WordPress plugin creation using WP-CLI's scaffold commands. This skill intelligently detects your environment (WordPress installation or wp-env), gathers plugin metadata conversationally, and generates complete plugin boilerplate with optional PHPUnit tests and CI configuration.
+
+**When to use it:**
+
+- "Create a new WordPress plugin called..."
+- "Scaffold a plugin for..."
+- "Add tests to my existing plugin"
+- "I need a new plugin to..."
+
+**Key features:**
+
+- **Intelligent environment detection** - Automatically detects WordPress, wp-env, or standalone environments
+- **Conversational workflow** - Gathers metadata with smart defaults from git config
+- **Complete boilerplate** - Generates main plugin file, readme.txt, package.json, and editor configs
+- **Test infrastructure** - Optional PHPUnit setup with CI configuration (GitHub Actions, CircleCI, GitLab, Bitbucket)
+- **Seamless activation** - Offers to activate plugin after scaffolding when using wp-env
+
+**Installation:**
 
 ```bash
 /plugin install wordpress-plugin-scaffold@emdashcodes-wp-ability-toolkit
 ```
 
-**wp-env** - Manage local WordPress development environments
+#### wp-env
 
-- Start, stop, and configure Docker-based WordPress environments
-- Execute WP-CLI commands inside environments
-- Manage plugins, themes, and WordPress core
-- Complete `.wp-env.json` configuration guide
+**What it does:** Manages Docker-based local WordPress development environments using `@wordpress/env`. This skill provides zero-config setup for plugin and theme development with dual environments, pre-configured WP-CLI, Composer, PHPUnit, and Xdebug.
+
+**When to use it:**
+
+- "Start the WordPress environment"
+- "Run WP-CLI commands in wp-env"
+- "Configure my .wp-env.json"
+- "How do I test my plugin locally?"
+
+**Key features:**
+
+- **Zero-config setup** - Works out of the box for plugins and themes
+- **Dual environments** - Separate development and testing instances
+- **Complete tooling** - Includes WP-CLI, Composer, PHPUnit, and Xdebug
+
+**Installation:**
 
 ```bash
 /plugin install wp-env@emdashcodes-wp-ability-toolkit
@@ -136,15 +190,16 @@ Install the marketplace in Claude Code:
 ### Using the Skills
 
 Once installed, Claude Code will automatically activate these skills when you work on WordPress Ability or WordPress projects if you allow it to. The skills are designed to work together but can also be used independently in your other projects to scaffold WordPress plugins and environments.
+You can also ask it to activate the skills manually if needed.
 
 ## Architecture
 
 - **`packages/`** - WordPress plugin packages (pnpm monorepo)
-    - `wp-ability-toolkit` - WordPress plugin with PHP backend and React frontend
-    - `agenttic-ai-sdk-bridge` - TypeScript bridge connecting WordPress REST API with Agenttic UI
+  - `wp-ability-toolkit` - WordPress plugin with PHP backend and React frontend
+  - `agenttic-ai-sdk-bridge` - TypeScript bridge connecting WordPress REST API with Agenttic UI
 - **`claude-code-plugins/`** - Claude Code marketplace skills
-    - `wordpress-ability-api` - Ability scaffolding and validation
-    - `wordpress-plugin-scaffold` - WP-CLI plugin scaffolding
+  - `wordpress-ability-api` - Ability scaffolding and validation
+  - `wordpress-plugin-scaffold` - WP-CLI plugin scaffolding
 
 ### Technology Stack
 
@@ -219,10 +274,6 @@ wp-ability-toolkit/
 ├── packages/                       # WordPress packages (pnpm monorepo)
 │   ├── agenttic-ai-sdk-bridge/     # TypeScript bridge package
 │   │   ├── src/
-│   │   │   ├── index.ts            # Main entry point
-│   │   │   ├── useWordPressChat.ts # React hook
-│   │   │   ├── streamAdapter.ts    # SSE parsing
-│   │   │   └── types.ts            # TypeScript interfaces
 │   │   └── package.json
 │   └── wp-ability-toolkit/         # WordPress plugin
 │       ├── src/
