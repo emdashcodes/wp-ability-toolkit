@@ -215,9 +215,22 @@ class OpenAI_Client extends AI_Client {
 							$this->tool_calls[ $index ]['function']['name'] .= $tool_call_delta['function']['name'];
 						}
 
-						// Accumulate function arguments.
+						// Accumulate function arguments and emit delta.
 						if ( isset( $tool_call_delta['function']['arguments'] ) ) {
 							$this->tool_calls[ $index ]['function']['arguments'] .= $tool_call_delta['function']['arguments'];
+
+							// Emit tool_call_delta event for streaming arguments.
+							$ability_name = $this->tools_manager ? $this->tools_manager->unsanitize_tool_name( $this->tool_calls[ $index ]['function']['name'] ) : $this->tool_calls[ $index ]['function']['name'];
+							echo 'data: ' . wp_json_encode(
+								array(
+									'tool_call_delta' => array(
+										'id'              => $this->tool_calls[ $index ]['id'],
+										'name'            => $ability_name,
+										'arguments_delta' => $tool_call_delta['function']['arguments'],
+									),
+								)
+							) . "\n\n";
+							flush();
 						}
 					}
 				}

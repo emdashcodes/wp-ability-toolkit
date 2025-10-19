@@ -35,14 +35,19 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 	const isReloadAbility = toolCall.name === 'wp-ability-toolkit/reload';
 
 	if (isThinkAbility) {
+		// Extract thought from output (complete) or input (streaming)
 		const thought =
 			toolCall.output &&
 			typeof toolCall.output === 'object' &&
 			'thought' in toolCall.output
 				? (toolCall.output as { thought: string }).thought
-				: typeof toolCall.output === 'string'
-					? toolCall.output
-					: null;
+				: toolCall.input &&
+					  typeof toolCall.input === 'object' &&
+					  'thought' in toolCall.input
+					? (toolCall.input as { thought: string }).thought
+					: typeof toolCall.output === 'string'
+						? toolCall.output
+						: null;
 
 		const isStreaming = toolCall.status === 'pending';
 		const isComplete = toolCall.status === 'success';
@@ -109,7 +114,7 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 							style={{
 								padding: '12px 16px',
 								backgroundColor: '#f6f7f7',
-								borderLeft: '3px solid #8c8f94',
+								borderLeft: `3px solid ${isStreaming ? '#2271b1' : '#8c8f94'}`,
 								borderRadius: '4px',
 								fontSize: '13px',
 								lineHeight: '1.6',
@@ -118,6 +123,20 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 							}}
 						>
 							<ReactMarkdown>{thought}</ReactMarkdown>
+							{isStreaming && (
+								<span
+									className="streaming-cursor"
+									style={{
+										display: 'inline-block',
+										width: '2px',
+										height: '1em',
+										backgroundColor: '#2271b1',
+										marginLeft: '2px',
+										verticalAlign: 'text-bottom',
+										animation: 'blink 1s step-end infinite',
+									}}
+								/>
+							)}
 						</div>
 						<Tooltip
 							text={copiedThought ? 'Copied!' : 'Copy thought'}
@@ -152,6 +171,14 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 						to {
 							opacity: 1;
 							transform: translateY(0);
+						}
+					}
+					@keyframes blink {
+						0%, 50% {
+							opacity: 1;
+						}
+						51%, 100% {
+							opacity: 0;
 						}
 					}
 				`}</style>
@@ -258,6 +285,95 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 		}
 	};
 
+	const getDisplayName = () => {
+		// Extract ability name from namespace/ability-name format
+		// e.g., "my-plugin/get-posts" -> "Get Posts"
+		const parts = toolCall.name.split('/');
+		if (parts.length === 2) {
+			const abilityName = parts[1];
+			// Convert kebab-case to Title Case
+			return abilityName
+				.split('-')
+				.map(word => word.charAt(0).toUpperCase() + word.slice(1))
+				.join(' ');
+		}
+		return toolCall.name;
+	};
+
+	const getPendingText = () => {
+		const displayName = getDisplayName();
+		return `Using ${displayName}...`;
+	};
+
+	// Pending state shows in a yellow box
+	if (toolCall.status === 'pending') {
+		return (
+			<div
+				className="tool-call-wrapper tool-call-pending"
+				style={{
+					marginTop: '2px',
+					marginBottom: '2px',
+					border: '1px solid #dcdcde',
+					borderRadius: '4px',
+					overflow: 'hidden',
+					width: '100%',
+					maxWidth: '100%',
+					minWidth: 0,
+					boxSizing: 'border-box',
+				}}
+			>
+				<div
+					className="tool-call-header"
+					style={{
+						display: 'flex',
+						alignItems: 'center',
+						gap: '8px',
+						padding: '8px 12px',
+						fontSize: '11px',
+						minWidth: 0,
+						width: '100%',
+						maxWidth: '100%',
+						boxSizing: 'border-box',
+						overflow: 'hidden',
+					}}
+				>
+					<span
+						className="pending-spinner"
+						style={{
+							display: 'inline-block',
+							width: '16px',
+							height: '16px',
+							border: '2px solid #f0f0f1',
+							borderTopColor: '#dba617',
+							borderRadius: '50%',
+							animation: 'spin 0.8s linear infinite',
+							flexShrink: 0,
+						}}
+					/>
+					<span
+						style={{
+							fontWeight: 600,
+							flex: 1,
+							overflow: 'hidden',
+							textOverflow: 'ellipsis',
+							whiteSpace: 'nowrap',
+							minWidth: 0,
+						}}
+					>
+						{getDisplayName()}
+					</span>
+				</div>
+				<style>{`
+					@keyframes spin {
+						to {
+							transform: rotate(360deg);
+						}
+					}
+				`}</style>
+			</div>
+		);
+	}
+
 	return (
 		<div
 			className={`tool-call-wrapper ${getStatusClass()}`}
@@ -314,7 +430,7 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 							minWidth: 0,
 						}}
 					>
-						{toolCall.name}
+						{getDisplayName()}
 					</span>
 				</Tooltip>
 				<Icon
@@ -595,11 +711,11 @@ export function ToolCall({ toolCall }: ToolCallProps) {
         }
 
         .tool-call-pending {
-          border-left: 3px solid #2271b1 !important;
+          border-left: 3px solid #dba617 !important;
         }
 
         .tool-call-pending .tool-call-header {
-          background-color: #f0f6fc;
+          background-color: #fcf9e8;
         }
 
         .tool-call-success {

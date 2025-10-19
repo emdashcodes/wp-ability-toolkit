@@ -20,6 +20,12 @@ export interface ServerToolCallEvent {
 	error?: string;
 }
 
+export interface ToolCallDeltaEvent {
+	id: string;
+	name: string;
+	arguments_delta: string;
+}
+
 export interface StreamChunk {
 	id?: string;
 	role?: 'assistant';
@@ -28,6 +34,7 @@ export interface StreamChunk {
 	done?: boolean;
 	client_tool_call?: ToolCallEvent;
 	server_tool_call?: ServerToolCallEvent;
+	tool_call_delta?: ToolCallDeltaEvent;
 	assistant_message?: {
 		role: 'assistant';
 		content: string;

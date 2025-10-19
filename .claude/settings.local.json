@@ -1,7 +1,11 @@
 {
-	"permissions": {
-		"allow": ["Skill(wordpress-dev-skills:wordpress-ability-api)"],
-		"deny": [],
-		"ask": []
-	}
+  "permissions": {
+    "allow": [
+      "Skill(wordpress-dev-skills:wordpress-ability-api)",
+      "WebSearch",
+      "Skill(wordpress-ability-api)"
+    ],
+    "deny": [],
+    "ask": []
+  }
 }

@@ -10,14 +10,15 @@ import {
 	createElement,
 	useCallback,
 } from '@wordpress/element';
-import { Icon } from '@wordpress/components';
-import { copy, check } from '@wordpress/icons';
+import { Icon, Button, Tooltip } from '@wordpress/components';
+import { copy, check, copySmall } from '@wordpress/icons';
 import {
 	AgentUIContainer,
 	AgentUIConversationView,
 	AgentUIMessages,
 	AgentUIFooter,
 	AgentUIInput,
+	createMessageRenderer,
 } from '@automattic/agenttic-ui';
 import '@automattic/agenttic-ui/index.css';
 import './agenttic-ui-overrides.css';
@@ -26,8 +27,114 @@ import {
 	copyToClipboard,
 } from '@emdashcodes/agenttic-ai-sdk-bridge';
 import { retrieveContinuation, clearContinuation } from '../utils/continuation';
-import { debug } from '../debug';
 import { ChatHeader } from './ChatHeader';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { ghcolors } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
+/**
+ * Custom Code Block component with syntax highlighting
+ */
+function CodeBlock({ inline, className, children, ...props }: any) {
+	const [copied, setCopied] = useState(false);
+
+	// Extract language from className (format: language-javascript)
+	const match = /language-(\w+)/.exec(className || '');
+	const language = match ? match[1] : '';
+
+	// Inline code styling
+	if (inline) {
+		return (
+			<code
+				className={className}
+				style={{
+					backgroundColor: 'rgba(135, 131, 120, 0.15)',
+					borderRadius: '3px',
+					padding: '0.2em 0.4em',
+					fontSize: '85%',
+					fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+				}}
+				{...props}
+			>
+				{children}
+			</code>
+		);
+	}
+
+	// Block code with syntax highlighting
+	const codeString = String(children).replace(/\n$/, '');
+
+	const handleCopy = async () => {
+		await copyToClipboard(codeString, () => {
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000);
+		});
+	};
+
+	return (
+		<div style={{ position: 'relative', marginBottom: '16px' }}>
+			{language && (
+				<div
+					style={{
+						position: 'absolute',
+						top: '10px',
+						left: '14px',
+						fontSize: '11px',
+						fontWeight: '600',
+						color: '#2271b1',
+						textTransform: 'uppercase',
+						letterSpacing: '0.5px',
+						zIndex: 1,
+						background: '#fff',
+						padding: '2px 6px',
+						borderRadius: '3px',
+						border: '1px solid #dcdcde',
+					}}
+				>
+					{language}
+				</div>
+			)}
+			<Tooltip text={copied ? 'Copied!' : 'Copy code'}>
+				<Button
+					icon={copied ? check : copySmall}
+					size="small"
+					variant="secondary"
+					onClick={handleCopy}
+					style={{
+						position: 'absolute',
+						top: '4px',
+						right: '8px',
+						minWidth: 'auto',
+						height: '24px',
+						padding: '0 8px',
+						zIndex: 2,
+					}}
+				/>
+			</Tooltip>
+			<SyntaxHighlighter
+				language={language || 'text'}
+				style={ghcolors}
+				customStyle={{
+					margin: 0,
+					borderRadius: '4px',
+					padding: language ? '36px 16px 16px' : '16px',
+					fontSize: '13px',
+					lineHeight: '1.6',
+					background: '#f6f7f7',
+					border: '1px solid #dcdcde',
+				}}
+				codeTagProps={{
+					style: {
+						fontFamily:
+							'Consolas, Monaco, "Courier New", monospace',
+					},
+				}}
+				{...props}
+			>
+				{codeString}
+			</SyntaxHighlighter>
+		</div>
+	);
+}
 
 /**
  * Get the message to send for continuation completion
@@ -64,6 +171,21 @@ export function AbilityChat() {
 		conversationStorageKey: 'wp-ability-toolkit-chat',
 	});
 
+	// Create message renderer with custom code block component and GFM support
+	const messageRenderer = useMemo(
+		() =>
+			createMessageRenderer({
+				components: {
+					code: CodeBlock,
+				},
+				extensions: {
+					gfm: {
+						enabled: true,
+					},
+				},
+			}),
+		[]
+	);
 
 	// Check for pending continuation (navigate/reload) and continue conversation
 	useEffect(() => {
@@ -74,25 +196,13 @@ export function AbilityChat() {
 
 		const pendingContinuation = retrieveContinuation();
 		if (!pendingContinuation) {
-			debug('[Ability Toolkit] No pending continuation detected');
 			return;
 		}
-
-		debug(
-			'[Ability Toolkit] Pending continuation detected:',
-			pendingContinuation
-		);
 
 		// Wait for chat to be fully initialized
 		if (chatProps.isLoading) {
-			debug('[Ability Toolkit] Chat still loading, waiting...');
 			return;
 		}
-
-		debug(
-			'[Ability Toolkit] Chat initialized, messages:',
-			chatProps.messages?.length || 0
-		);
 
 		// Mark as sent BEFORE calling the async function to prevent duplicate sends
 		continuationSentRef.current = true;
@@ -106,18 +216,6 @@ export function AbilityChat() {
 					pendingContinuation.assistantMessage &&
 					pendingContinuation.toolResult
 				) {
-					debug(
-						'[Ability Toolkit] Found stored tool call, continuing conversation'
-					);
-					debug(
-						'[Ability Toolkit] Assistant message:',
-						pendingContinuation.assistantMessage
-					);
-					debug(
-						'[Ability Toolkit] Tool result:',
-						pendingContinuation.toolResult
-					);
-
 					// Use the new continueWithToolResult method
 					if (
 						typeof chatProps.continueWithToolResult === 'function'
@@ -126,9 +224,6 @@ export function AbilityChat() {
 							pendingContinuation.assistantMessage,
 							pendingContinuation.toolResult
 						);
-						debug(
-							`[Ability Toolkit] ${pendingContinuation.continuationType} continuation completed`
-						);
 					} else {
 						console.error(
 							'[Ability Toolkit] continueWithToolResult is not available'
@@ -136,23 +231,13 @@ export function AbilityChat() {
 					}
 				} else {
 					// Fallback to old flow (send synthetic user message)
-					debug(
-						'[Ability Toolkit] No stored tool call, using fallback continuation'
-					);
 					const continuationMessage =
 						getContinuationCompletionMessage(
 							pendingContinuation.continuationType
 						);
 
 					if (typeof chatProps.onSubmit === 'function') {
-						debug(
-							'[Ability Toolkit] Sending continuation message:',
-							continuationMessage
-						);
 						await chatProps.onSubmit(continuationMessage);
-						debug(
-							'[Ability Toolkit] Navigation continuation message sent successfully'
-						);
 					} else {
 						console.error(
 							'[Ability Toolkit] onSubmit is not available'
@@ -311,6 +396,7 @@ export function AbilityChat() {
 				onSubmit={chatProps.onSubmit}
 				suggestions={chatProps.suggestions}
 				clearSuggestions={chatProps.clearSuggestions}
+				messageRenderer={messageRenderer}
 				variant="floating"
 				onClose={handleClose}
 				onExpand={handleExpand}

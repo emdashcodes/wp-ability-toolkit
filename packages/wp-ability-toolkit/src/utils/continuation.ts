@@ -104,59 +104,34 @@ export function retrieveContinuation(): ContinuationState | null {
 	try {
 		const stored = localStorage.getItem(CONTINUATION_STORAGE_KEY);
 		if (!stored) {
-			debug('[Ability Toolkit] No continuation state in localStorage');
 			return null;
 		}
 
 		const state: ContinuationState = JSON.parse(stored);
-		debug('[Ability Toolkit] Retrieved continuation state:');
-		debug('[Ability Toolkit] - Type:', state.continuationType);
-		debug('[Ability Toolkit] - Destination:', state.destination);
-		debug('[Ability Toolkit] - Initiating URL:', state.initiatingUrl);
-		debug('[Ability Toolkit] - Current URL:', window.location.href);
-		debug(
-			'[Ability Toolkit] - Has assistant message:',
-			!!state.assistantMessage
-		);
-		debug('[Ability Toolkit] - Has tool result:', !!state.toolResult);
 
 		// Type-aware validation
 		if (state.initiatingUrl) {
 			const urlChanged = state.initiatingUrl !== window.location.href;
-			debug('[Ability Toolkit] - URL changed:', urlChanged);
 
 			if (state.continuationType === 'navigate') {
 				// Navigate: Must be on different URL (navigation completed)
 				if (!urlChanged) {
-					debug(
-						'[Ability Toolkit] Skipping continuation - navigate type but URL unchanged, navigation not complete'
-					);
 					return null;
 				}
 			} else if (state.continuationType === 'reload') {
 				// Reload: Must be on same URL (didn't navigate away)
 				if (urlChanged) {
-					debug(
-						'[Ability Toolkit] Clearing continuation - reload type but URL changed unexpectedly'
-					);
 					clearContinuation();
 					return null;
 				}
-				// For reload, URL doesn't change so just continue
-				debug(
-					'[Ability Toolkit] Reload confirmed - continuing conversation'
-				);
 			}
 		}
 
 		// Check if continuation has expired
 		if (Date.now() - state.timestamp > CONTINUATION_EXPIRY_MS) {
-			debug('[Ability Toolkit] Continuation expired');
 			localStorage.removeItem(CONTINUATION_STORAGE_KEY);
 			return null;
 		}
-
-		debug('[Ability Toolkit] Continuation validated successfully');
 		return state;
 	} catch (error) {
 		console.error(

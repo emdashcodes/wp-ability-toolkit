@@ -3,6 +3,7 @@
  * Matches the useAgentChat interface from @automattic/agenttic-client
  *
  * FULLY REFACTORED VERSION using extracted hooks
+ * Cache bust: streaming tool call deltas with visual indicators
  */
 
 import { useState, useCallback, useEffect } from '@wordpress/element';
@@ -96,7 +97,7 @@ export function useWordPressChat(
 		getSignal,
 	} = useAbortController();
 	const { makeRequest } = useStreamingRequest();
-	const { handleServerToolCall, handleClientToolCall } =
+	const { handleServerToolCall, handleClientToolCall, handleToolCallDelta } =
 		useToolCallHandler(setMessages);
 	const { toWordPressMessages } = useMessageConverter();
 
@@ -159,6 +160,11 @@ export function useWordPressChat(
 					payload,
 					updateStreamingMessage,
 					async (chunk) => {
+						// Log all chunks
+						if (chunk.tool_call_delta) {
+							console.log('[CHUNK] tool_call_delta', chunk.tool_call_delta);
+						}
+
 						// Detect new completion (reset streaming message)
 						if (chunk.id && chunk.id !== currentCompletionId) {
 							debug('[WordPress Chat] New completion:', chunk.id);
@@ -179,6 +185,13 @@ export function useWordPressChat(
 							debug(
 								'[WordPress Chat] Captured assistant message with tool calls'
 							);
+						}
+
+						// Handle tool call delta (streaming arguments)
+						if (chunk.tool_call_delta) {
+							console.log('[CALLING] handleToolCallDelta');
+							handleToolCallDelta(chunk.tool_call_delta);
+							return; // Continue to next chunk
 						}
 
 						// Handle server tool call
@@ -297,6 +310,7 @@ export function useWordPressChat(
 			makeRequest,
 			handleServerToolCall,
 			handleClientToolCall,
+			handleToolCallDelta,
 			toWordPressMessages,
 			setMessages,
 			setIsProcessing,
