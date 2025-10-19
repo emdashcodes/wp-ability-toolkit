@@ -10,27 +10,13 @@ namespace WP_Ability_Toolkit;
 /**
  * Handles communication with Anthropic API
  */
-class Anthropic_Client {
-	/**
-	 * API key
-	 *
-	 * @var string
-	 */
-	private $api_key;
-
+class Anthropic_Client extends AI_Client {
 	/**
 	 * API URL
 	 *
 	 * @var string
 	 */
 	private $api_url = 'https://api.anthropic.com/v1/messages';
-
-	/**
-	 * Tools manager instance
-	 *
-	 * @var Ability_Tools_Manager|null
-	 */
-	private $tools_manager = null;
 
 	/**
 	 * Tool use blocks collected during streaming
@@ -47,20 +33,6 @@ class Anthropic_Client {
 	private $current_block = null;
 
 	/**
-	 * Constructor
-	 *
-	 * @param string $api_key API key.
-	 */
-	public function __construct( $api_key ) {
-		$this->api_key = $api_key;
-	}
-
-	/**
-	 * Maximum tool call recursion depth
-	 */
-	const MAX_RECURSION_DEPTH = 20;
-
-	/**
 	 * Stream chat completion
 	 *
 	 * @param string                     $model   Model name.
@@ -72,26 +44,13 @@ class Anthropic_Client {
 	public function stream_chat( $model, $messages, $tools_manager = null, $recursion_depth = 0 ) {
 		// Set streaming headers only on first call (not on recursive calls).
 		if ( 0 === $recursion_depth ) {
-			header( 'Content-Type: text/event-stream' );
-			header( 'Cache-Control: no-cache' );
-			header( 'X-Accel-Buffering: no' );
-
-			// Disable output buffering.
-			if ( ob_get_level() ) {
-				ob_end_clean();
-			}
+			$this->set_streaming_headers();
 		}
 
 		// Check recursion depth limit.
-		if ( $recursion_depth >= self::MAX_RECURSION_DEPTH ) {
-			error_log( "WP Ability Toolkit: Recursion depth limit reached: {$recursion_depth}" );
-			$this->send_sse_error( 'Maximum tool execution depth reached (' . self::MAX_RECURSION_DEPTH . ' rounds). This may indicate a complex workflow or a tool execution loop.' );
-			echo 'data: ' . wp_json_encode( array( 'done' => true ) ) . "\n\n";
-			flush();
+		if ( $this->check_recursion_limit( $recursion_depth ) ) {
 			exit;
 		}
-
-		error_log( "WP Ability Toolkit: Starting stream_chat with recursion depth {$recursion_depth}, model: {$model}" );
 
 		// Convert messages to Anthropic format.
 		$anthropic_messages = $this->convert_messages( $messages );
@@ -160,6 +119,25 @@ class Anthropic_Client {
 	 * @return int Length of data.
 	 */
 	public function stream_callback( $ch, $data ) {
+		// Check if this is a JSON error response (not SSE format).
+		if ( strpos( $data, '{' ) === 0 ) {
+			$error_data = json_decode( $data, true );
+			if ( isset( $error_data['error'] ) ) {
+				$error_message = is_array( $error_data['error'] ) && isset( $error_data['error']['message'] )
+					? $error_data['error']['message']
+					: ( is_string( $error_data['error'] ) ? $error_data['error'] : 'Unknown API error' );
+
+				// Provide user-friendly error message.
+				$user_message = $error_message;
+				if ( strpos( $error_message, 'API key' ) !== false || strpos( $error_message, 'api_key' ) !== false ) {
+					$user_message = 'Invalid API key provided. Please check your API key in the WP Ability Toolkit settings page.';
+				}
+
+				$this->send_sse_error( $user_message );
+				return strlen( $data );
+			}
+		}
+
 		// Parse SSE lines.
 		$lines = explode( "\n", $data );
 		$current_event = '';
@@ -387,15 +365,5 @@ class Anthropic_Client {
 		}
 
 		return $converted;
-	}
-
-	/**
-	 * Send SSE error message
-	 *
-	 * @param string $message Error message.
-	 */
-	private function send_sse_error( $message ) {
-		echo 'data: ' . wp_json_encode( array( 'error' => $message ) ) . "\n\n";
-		flush();
 	}
 }

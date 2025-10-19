@@ -1,5 +1,5 @@
 {
-	"name": "@automattic/agenttic-ai-sdk-bridge",
+	"name": "@emdashcodes/agenttic-ai-sdk-bridge",
 	"version": "0.1.0",
 	"type": "module",
 	"description": "Client-side bridge between WordPress REST API and Agenttic UI",
@@ -31,6 +31,11 @@
 	],
 	"author": "Em",
 	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/emdashcodes/wp-ability-toolkit.git",
+		"directory": "packages/agenttic-ai-sdk-bridge"
+	},
 	"engines": {
 		"node": ">=20.0.0"
 	},

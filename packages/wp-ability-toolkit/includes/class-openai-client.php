@@ -10,27 +10,13 @@ namespace WP_Ability_Toolkit;
 /**
  * Handles communication with OpenAI API
  */
-class OpenAI_Client {
-	/**
-	 * API key
-	 *
-	 * @var string
-	 */
-	private $api_key;
-
+class OpenAI_Client extends AI_Client {
 	/**
 	 * API URL
 	 *
 	 * @var string
 	 */
 	private $api_url = 'https://api.openai.com/v1/chat/completions';
-
-	/**
-	 * Tools manager instance
-	 *
-	 * @var Ability_Tools_Manager|null
-	 */
-	private $tools_manager = null;
 
 	/**
 	 * Tool calls collected during streaming
@@ -54,20 +40,6 @@ class OpenAI_Client {
 	private $stream_buffer = '';
 
 	/**
-	 * Constructor
-	 *
-	 * @param string $api_key API key.
-	 */
-	public function __construct( $api_key ) {
-		$this->api_key = $api_key;
-	}
-
-	/**
-	 * Maximum tool call recursion depth
-	 */
-	const MAX_RECURSION_DEPTH = 20;
-
-	/**
 	 * Stream chat completion
 	 *
 	 * @param string                     $model   Model name.
@@ -79,25 +51,13 @@ class OpenAI_Client {
 	public function stream_chat( $model, $messages, $tools_manager = null, $recursion_depth = 0 ) {
 		// Set streaming headers only on first call (not on recursive calls).
 		if ( 0 === $recursion_depth ) {
-			header( 'Content-Type: text/event-stream' );
-			header( 'Cache-Control: no-cache' );
-			header( 'X-Accel-Buffering: no' );
-
-			// Disable output buffering.
-			if ( ob_get_level() ) {
-				ob_end_clean();
-			}
+			$this->set_streaming_headers();
 		}
 
 		// Check recursion depth limit.
-		if ( $recursion_depth >= self::MAX_RECURSION_DEPTH ) {
-			$this->send_sse_error( 'Maximum tool execution depth reached (' . self::MAX_RECURSION_DEPTH . ' rounds). This may indicate a complex workflow or a tool execution loop.' );
-			echo 'data: ' . wp_json_encode( array( 'done' => true ) ) . "\n\n";
-			flush();
+		if ( $this->check_recursion_limit( $recursion_depth ) ) {
 			exit;
 		}
-
-		error_log( "WP Ability Toolkit: OpenAI stream_chat called - recursion depth: {$recursion_depth}, model: {$model}" );
 
 		// Store tools manager for callback access.
 		$this->tools_manager = $tools_manager;
@@ -144,13 +104,8 @@ class OpenAI_Client {
 		$result = curl_exec( $ch );
 
 		if ( curl_errno( $ch ) ) {
-			error_log( 'WP Ability Toolkit: cURL error: ' . curl_error( $ch ) );
 			$this->send_sse_error( curl_error( $ch ) );
 		}
-
-		$http_code = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
-		error_log( "WP Ability Toolkit: OpenAI API response code: {$http_code}" );
-		error_log( 'WP Ability Toolkit: Tool calls collected: ' . count( $this->tool_calls ) );
 
 		curl_close( $ch );
 
@@ -178,8 +133,14 @@ class OpenAI_Client {
 				$error_message = is_array( $error_data['error'] ) && isset( $error_data['error']['message'] )
 					? $error_data['error']['message']
 					: ( is_string( $error_data['error'] ) ? $error_data['error'] : 'Unknown API error' );
-				error_log( 'WP Ability Toolkit: OpenAI API error: ' . $error_message );
-				$this->send_sse_error( $error_message );
+
+				// Provide user-friendly error message.
+				$user_message = $error_message;
+				if ( strpos( $error_message, 'API key' ) !== false || strpos( $error_message, 'api_key' ) !== false ) {
+					$user_message = 'Invalid API key provided. Please check your API key in the WP Ability Toolkit settings page.';
+				}
+
+				$this->send_sse_error( $user_message );
 				return $original_length;
 			}
 		}
@@ -305,18 +266,14 @@ class OpenAI_Client {
 		$has_client_tools = false;
 		$client_tool_calls = array();
 
-		error_log( '[WP Ability Toolkit] Checking tool calls: ' . count( $this->tool_calls ) );
 		foreach ( $this->tool_calls as $tool_call ) {
 			$function_name = $tool_call['function']['name'];
-			error_log( '[WP Ability Toolkit] Tool: ' . $function_name );
 			$is_client = $this->tools_manager && $this->tools_manager->is_client_tool( $function_name );
-			error_log( '[WP Ability Toolkit] Is client tool? ' . ( $is_client ? 'YES' : 'NO' ) );
 			if ( $is_client ) {
 				$has_client_tools = true;
 				$client_tool_calls[] = $tool_call;
 			}
 		}
-		error_log( '[WP Ability Toolkit] Has client tools? ' . ( $has_client_tools ? 'YES' : 'NO' ) );
 
 		// If we have client tools, emit assistant message and tool call events.
 		if ( $has_client_tools ) {
@@ -410,15 +367,5 @@ class OpenAI_Client {
 
 		// Make recursive call to continue conversation with incremented depth.
 		$this->stream_chat( $model, $messages, $this->tools_manager, $recursion_depth + 1 );
-	}
-
-	/**
-	 * Send SSE error message
-	 *
-	 * @param string $message Error message.
-	 */
-	private function send_sse_error( $message ) {
-		echo 'data: ' . wp_json_encode( array( 'error' => $message ) ) . "\n\n";
-		flush();
 	}
 }

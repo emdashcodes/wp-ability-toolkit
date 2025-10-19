@@ -6,6 +6,9 @@
 // Main hook
 export { useWordPressChat } from './useWordPressChat.js';
 
+// Debug utility
+export { debug } from './debug.js';
+
 // Components
 export { ToolCall } from './components/ToolCall.js';
 

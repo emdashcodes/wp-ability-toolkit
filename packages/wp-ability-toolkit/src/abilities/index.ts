@@ -9,6 +9,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { navigateAbility } from './navigate';
 import { getBrowserInfoAbility } from './get-browser-info';
+import { debug } from '../debug';
 
 /**
  * Re-export navigation utilities for use in other modules
@@ -36,17 +37,17 @@ export async function registerAbilities(): Promise<void> {
 				'wp-ability-toolkit'
 			),
 		});
-		console.log('[Ability Toolkit] Registered category: navigation');
+		debug('[Ability Toolkit] Registered category: navigation');
 
 		// Register navigate ability
 		await registerAbility(navigateAbility);
-		console.log(
+		debug(
 			'[Ability Toolkit] Registered ability: wp-ability-toolkit/navigate'
 		);
 
 		// Register get-browser-info ability
 		await registerAbility(getBrowserInfoAbility);
-		console.log(
+		debug(
 			'[Ability Toolkit] Registered ability: wp-ability-toolkit/get-browser-info'
 		);
 	} catch (error) {

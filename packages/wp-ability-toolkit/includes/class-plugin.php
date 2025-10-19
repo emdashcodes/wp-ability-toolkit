@@ -78,6 +78,9 @@ class Plugin {
 	 * Initialize the plugin
 	 */
 	public function init() {
+		// Load text domain for translations.
+		add_action( 'init', array( $this, 'load_textdomain' ) );
+
 		// Register settings.
 		add_action( 'admin_init', array( $this->settings, 'register' ) );
 
@@ -103,12 +106,23 @@ class Plugin {
 	}
 
 	/**
+	 * Load plugin textdomain for translations
+	 */
+	public function load_textdomain() {
+		load_plugin_textdomain(
+			'wp-ability-toolkit',
+			false,
+			dirname( plugin_basename( $this->plugin_file ) ) . '/languages'
+		);
+	}
+
+	/**
 	 * Add settings page to WordPress admin
 	 */
 	public function add_settings_page() {
-		add_options_page(
-			__( 'AI Ability Toolkit Settings', 'wp-ability-toolkit' ),
-			__( 'AI Ability Toolkit', 'wp-ability-toolkit' ),
+		add_management_page(
+			__( 'WP Ability Toolkit', 'wp-ability-toolkit' ),
+			__( 'WP Ability Toolkit', 'wp-ability-toolkit' ),
 			'manage_options',
 			'wp-ability-toolkit-settings',
 			array( $this, 'render_settings_page' )
@@ -153,6 +167,13 @@ class Plugin {
 			filemtime( $widget_css_path )
 		);
 
+		// Set up script translations.
+		wp_set_script_translations(
+			'wp-ability-toolkit-chat-widget',
+			'wp-ability-toolkit',
+			dirname( $this->plugin_file ) . '/languages'
+		);
+
 		// Localize script with nonce and endpoint.
 		wp_localize_script(
 			'wp-ability-toolkit-chat-widget',
@@ -165,7 +186,7 @@ class Plugin {
 		);
 
 		// Enqueue settings page script if on settings page.
-		if ( 'settings_page_wp-ability-toolkit-settings' === $hook ) {
+		if ( 'tools_page_wp-ability-toolkit-settings' === $hook ) {
 			$settings_js_path = dirname( $this->plugin_file ) . '/build/admin/settings.js';
 
 			wp_enqueue_script(

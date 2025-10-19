@@ -4,6 +4,11 @@
 	"description": "AI Ability Toolkit for WordPress - Test and develop WordPress Ability API integrations with AI agents",
 	"author": "Em",
 	"license": "GPL-2.0-or-later",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/emdashcodes/wp-ability-toolkit.git",
+		"directory": "packages/wp-ability-toolkit"
+	},
 	"scripts": {
 		"build": "wp-scripts build",
 		"start": "wp-scripts start",
@@ -12,7 +17,7 @@
 		"format": "wp-scripts format"
 	},
 	"dependencies": {
-		"@automattic/agenttic-ai-sdk-bridge": "workspace:*",
+		"@emdashcodes/agenttic-ai-sdk-bridge": "workspace:*",
 		"@automattic/agenttic-ui": "^0.1.16",
 		"@wordpress/icons": "^11.0.0"
 	},

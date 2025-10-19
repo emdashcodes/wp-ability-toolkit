@@ -17,7 +17,7 @@ import { __ } from '@wordpress/i18n';
 import '@wordpress/components/build-style/style.css';
 
 interface Settings {
-	provider: 'openai' | 'anthropic';
+	provider: 'openai';
 	apiKey: string;
 	model: string;
 }
@@ -119,27 +119,15 @@ function SettingsPage() {
 		}
 	};
 
-	const modelOptions =
-		settings.provider === 'openai'
-			? [
-					{ label: 'GPT-5', value: 'gpt-5' },
-					{ label: 'GPT-4o', value: 'gpt-4o' },
-				]
-			: [
-					{
-						label: 'Claude Sonnet 4',
-						value: 'claude-sonnet-4-20250514',
-					},
-					{
-						label: 'Claude Sonnet 3.5',
-						value: 'claude-3-5-sonnet-20241022',
-					},
-				];
+	const modelOptions = [
+		{ label: 'GPT-5', value: 'gpt-5' },
+		{ label: 'GPT-4o', value: 'gpt-4o' },
+	];
 
 	if (loading) {
 		return (
 			<div className="wrap">
-				<h1>{__('WP Ability Tester Settings', 'wp-ability-tester')}</h1>
+				<h1>{__('WP Ability Toolkit', 'wp-ability-toolkit')}</h1>
 				<Spinner />
 			</div>
 		);
@@ -147,11 +135,11 @@ function SettingsPage() {
 
 	return (
 		<div className="wrap">
-			<h1>{__('WP Ability Tester Settings', 'wp-ability-tester')}</h1>
+			<h1>{__('WP Ability Toolkit', 'wp-ability-toolkit')}</h1>
 
 			{saved && (
 				<Notice status="success" isDismissible={false}>
-					{__('Settings saved successfully!', 'wp-ability-tester')}
+					{__('Settings saved successfully!', 'wp-ability-toolkit')}
 				</Notice>
 			)}
 
@@ -163,39 +151,34 @@ function SettingsPage() {
 
 			<Panel>
 				<PanelBody
-					title={__('AI Provider Configuration', 'wp-ability-tester')}
+					title={__('AI Provider Configuration', 'wp-ability-toolkit')}
 					initialOpen={true}
 				>
 					<PanelRow>
 						<SelectControl
-							label={__('Provider', 'wp-ability-tester')}
+							label={__('Provider', 'wp-ability-toolkit')}
 							value={settings.provider}
 							options={[
 								{ label: 'OpenAI', value: 'openai' },
-								{ label: 'Anthropic', value: 'anthropic' },
 							]}
 							onChange={(provider) =>
 								setSettings({
 									...settings,
-									provider: provider as
-										| 'openai'
-										| 'anthropic',
-									model:
-										provider === 'openai'
-											? 'gpt-5'
-											: 'claude-sonnet-4-20250514',
+									provider: provider as 'openai',
+									model: 'gpt-5',
 								})
 							}
 							help={__(
 								'Select the AI provider to use for chat completions',
-								'wp-ability-tester'
+								'wp-ability-toolkit'
 							)}
+							disabled={true}
 						/>
 					</PanelRow>
 
 					<PanelRow>
 						<TextControl
-							label={__('API Key', 'wp-ability-tester')}
+							label={__('API Key', 'wp-ability-toolkit')}
 							type="password"
 							value={settings.apiKey}
 							onChange={(apiKey) =>
@@ -208,11 +191,11 @@ function SettingsPage() {
 								hasExistingKey
 									? __(
 											'✓ API key configured. Enter a new key to replace it.',
-											'wp-ability-tester'
+											'wp-ability-toolkit'
 										)
 									: __(
 											'Your API key will be encrypted before storage',
-											'wp-ability-tester'
+											'wp-ability-toolkit'
 										)
 							}
 						/>
@@ -220,7 +203,7 @@ function SettingsPage() {
 
 					<PanelRow>
 						<SelectControl
-							label={__('Model', 'wp-ability-tester')}
+							label={__('Model', 'wp-ability-toolkit')}
 							value={settings.model}
 							options={modelOptions}
 							onChange={(model) =>
@@ -228,22 +211,10 @@ function SettingsPage() {
 							}
 							help={__(
 								'Select the AI model to use for completions',
-								'wp-ability-tester'
+								'wp-ability-toolkit'
 							)}
 						/>
 					</PanelRow>
-				</PanelBody>
-
-				<PanelBody
-					title={__('Ability API Integration', 'wp-ability-tester')}
-					initialOpen={false}
-				>
-					<Notice status="info" isDismissible={false}>
-						{__(
-							'WordPress Ability API integration coming soon. This will allow you to test abilities with the AI agent.',
-							'wp-ability-tester'
-						)}
-					</Notice>
 				</PanelBody>
 			</Panel>
 
@@ -255,8 +226,8 @@ function SettingsPage() {
 					disabled={saving || (!settings.apiKey && !hasExistingKey)}
 				>
 					{saving
-						? __('Saving...', 'wp-ability-tester')
-						: __('Save Settings', 'wp-ability-tester')}
+						? __('Saving...', 'wp-ability-toolkit')
+						: __('Save Settings', 'wp-ability-toolkit')}
 				</Button>
 			</div>
 		</div>

@@ -8,6 +8,7 @@ import { parseSSEStream } from './streamAdapter.js';
 import { getAllClientAbilities, executeToolCall } from './toolRegistry.js';
 import { DeltaAccumulator } from './deltaAccumulator.js';
 import { loadConversation, saveConversation } from './conversationStorage.js';
+import { debug } from './debug.js';
 import { ToolCall } from './components/ToolCall.js';
 import type {
 	UIMessage,
@@ -36,7 +37,7 @@ export function useWordPressChat(
 		if (conversationStorageKey) {
 			const savedMessages = loadConversation(conversationStorageKey);
 			if (savedMessages && savedMessages.length > 0) {
-				console.log(
+				debug(
 					'[WordPress Chat] Restored conversation from localStorage:',
 					savedMessages.length,
 					'messages'
@@ -69,7 +70,7 @@ export function useWordPressChat(
 	// Only save when not processing (i.e., when streaming is complete)
 	useEffect(() => {
 		if (conversationStorageKey && messages.length > 0 && !isProcessing) {
-			console.log(
+			debug(
 				'[WordPress Chat] Saving conversation to localStorage:',
 				messages.length,
 				'messages'
@@ -90,7 +91,7 @@ export function useWordPressChat(
 			previousStorageKey.current = conversationStorageKey;
 			const savedMessages = loadConversation(conversationStorageKey);
 			if (savedMessages && savedMessages.length > 0) {
-				console.log(
+				debug(
 					'[WordPress Chat] Reloaded conversation from new key:',
 					savedMessages.length,
 					'messages'
@@ -239,9 +240,14 @@ export function useWordPressChat(
 				});
 
 				for await (const chunk of parseSSEStream(response)) {
+					// Handle error events from SSE stream
+					if (chunk.error) {
+						throw new Error(chunk.error);
+					}
+
 					// Detect new completion and reset accumulator/message
 					if (chunk.id && chunk.id !== currentCompletionId) {
-						console.log(
+						debug(
 							'[WordPress Chat] New completion detected:',
 							chunk.id,
 							'previous:',
@@ -258,7 +264,7 @@ export function useWordPressChat(
 					// Capture assistant message with tool_calls
 					if (chunk.assistant_message) {
 						assistantMessageWithToolCalls = chunk.assistant_message;
-						console.log(
+						debug(
 							'[WordPress Chat] Captured assistant message with tool calls:',
 							assistantMessageWithToolCalls
 						);
@@ -393,15 +399,15 @@ export function useWordPressChat(
 							input: toolCall.input,
 						});
 
-						console.log(
+						debug(
 							'[WordPress Chat] Tool result:',
 							toolResult
 						);
-						console.log(
+						debug(
 							'[WordPress Chat] Tool result.output:',
 							toolResult.output
 						);
-						console.log(
+						debug(
 							'[WordPress Chat] Has _skipContinuation?',
 							toolResult.output?._skipContinuation
 						);
@@ -471,14 +477,14 @@ export function useWordPressChat(
 
 						// If tool wants to skip continuation, store data and exit
 						if (shouldSkipContinuation) {
-							console.log(
+							debug(
 								'[WordPress Chat] Tool requested skip continuation, storing for post-navigation'
 							);
-							console.log(
+							debug(
 								'[WordPress Chat] Assistant message:',
 								assistantMessageWithToolCalls
 							);
-							console.log(
+							debug(
 								'[WordPress Chat] Tool result:',
 								toolResultMessage
 							);
@@ -486,20 +492,20 @@ export function useWordPressChat(
 							// Store continuation data using global function if available
 							const storeFunc = (window as any)
 								.__wpAbilityToolkit_storeNavigationContinuation;
-							console.log(
+							debug(
 								'[WordPress Chat] Store function available?',
 								typeof storeFunc
 							);
 
 							if (typeof storeFunc === 'function') {
-								console.log(
+								debug(
 									'[WordPress Chat] Calling store function...'
 								);
 								storeFunc(
 									assistantMessageWithToolCalls,
 									toolResultMessage
 								);
-								console.log(
+								debug(
 									'[WordPress Chat] Store function called successfully'
 								);
 							} else {
@@ -524,11 +530,11 @@ export function useWordPressChat(
 									]
 								: [...wpMessages, toolResultMessage];
 
-						console.log(
+						debug(
 							'[WordPress Chat] Continuing with tool result:',
 							toolResultMessage
 						);
-						console.log(
+						debug(
 							'[WordPress Chat] Continuation messages:',
 							continuationMessages
 						);
@@ -547,7 +553,7 @@ export function useWordPressChat(
 							signal: abortControllerRef.current.signal,
 						});
 
-						console.log(
+						debug(
 							'[WordPress Chat] Continue response status:',
 							continueResponse.status
 						);
@@ -574,6 +580,11 @@ export function useWordPressChat(
 						for await (const continueChunk of parseSSEStream(
 							continueResponse
 						)) {
+							// Handle error events from SSE stream
+							if (continueChunk.error) {
+								throw new Error(continueChunk.error);
+							}
+
 							// Add chunk to accumulator
 							if (continueChunk.delta || continueChunk.content) {
 								deltaAccumulator.addChunk(continueChunk);
@@ -607,7 +618,7 @@ export function useWordPressChat(
 			} catch (err) {
 				// Handle AbortError specially
 				if (err instanceof Error && err.name === 'AbortError') {
-					console.log('Request was aborted by user');
+					debug('Request was aborted by user');
 					setIsProcessing(false);
 					return;
 				}
@@ -673,16 +684,16 @@ export function useWordPressChat(
 			assistantMessage: WordPressMessage,
 			toolResult: WordPressMessage
 		) => {
-			console.log('[WordPress Chat] ===== CONTINUATION START =====');
-			console.log(
+			debug('[WordPress Chat] ===== CONTINUATION START =====');
+			debug(
 				'[WordPress Chat] Current messages in state:',
 				messages.length
 			);
-			console.log(
+			debug(
 				'[WordPress Chat] Assistant message to add:',
 				assistantMessage
 			);
-			console.log('[WordPress Chat] Tool result to add:', toolResult);
+			debug('[WordPress Chat] Tool result to add:', toolResult);
 
 			setIsProcessing(true);
 			setError(null);
@@ -702,15 +713,15 @@ export function useWordPressChat(
 					toolResult,
 				];
 
-				console.log(
+				debug(
 					'[WordPress Chat] Converted UI messages to WordPress format:',
 					wpMessages
 				);
-				console.log(
+				debug(
 					'[WordPress Chat] Final continuation messages array:',
 					continuationMessages
 				);
-				console.log(
+				debug(
 					'[WordPress Chat] Sending continuation request to:',
 					endpoint
 				);
@@ -744,7 +755,7 @@ export function useWordPressChat(
 					throw new Error(`HTTP error! status: ${response.status}`);
 				}
 
-				console.log(
+				debug(
 					'[WordPress Chat] Continuation request successful, processing stream...'
 				);
 
@@ -786,6 +797,11 @@ export function useWordPressChat(
 				});
 
 				for await (const chunk of parseSSEStream(response)) {
+					// Handle error events from SSE stream
+					if (chunk.error) {
+						throw new Error(chunk.error);
+					}
+
 					if (chunk.delta || chunk.content) {
 						deltaAccumulator.addChunk(chunk);
 					}
@@ -797,17 +813,17 @@ export function useWordPressChat(
 				}
 
 				deltaAccumulator.flush();
-				console.log(
+				debug(
 					'[WordPress Chat] ===== CONTINUATION COMPLETE ====='
 				);
-				console.log(
+				debug(
 					'[WordPress Chat] Total messages now:',
 					messages.length + 1
 				); // +1 for the new assistant message
 				setIsProcessing(false);
 			} catch (err) {
 				if (err instanceof Error && err.name === 'AbortError') {
-					console.log('Request was aborted by user');
+					debug('Request was aborted by user');
 					setIsProcessing(false);
 					return;
 				}

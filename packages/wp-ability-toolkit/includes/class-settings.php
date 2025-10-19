@@ -59,8 +59,8 @@ class Settings {
 	 * @return string Sanitized provider.
 	 */
 	public function sanitize_provider( $value ) {
-		$allowed = array( 'openai', 'anthropic' );
-		return in_array( $value, $allowed, true ) ? $value : 'openai';
+		// Only OpenAI is supported currently (Anthropic provider is disabled - see TODO.md).
+		return 'openai';
 	}
 
 	/**

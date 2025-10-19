@@ -8,15 +8,8 @@ A toolkit for WordPress plugin development, testing AI agent integrations, and W
 ## Features
 
 - **Agent for debugging WordPress Abilities** - Includes an agent for WordPress that allows you to test and debug WordPress Abilities and navigate around your WordPress Admin
-- **Multi-Provider Support** - OpenAI (GPT-4o, GPT-5) and Anthropic (Claude Sonnet, Haiku)
-- **Claude Code Skills** - Specialized development skills for creating plugins validation, and environment management
-
-### TODO
-
-- **Move to Tools Menu in wp-admin**
-- **Debugging Interface** - Interface for debugging WordPress Abilities, sending inputing to the agent, and viewing the output
-- **Sidebar UI Option** - Provide an option for a dedicated sidebar agent instead
-- **Gemini Support** - Support for Gemini
+- **OpenAI Support** - OpenAI (GPT-4, GPT-4o, GPT-4-turbo)
+- **Claude Code Skills** - Specialized development skills for plugin creation, validation, and environment management
 
 ## Claude Code Marketplace
 
@@ -67,9 +60,7 @@ Install the marketplace in Claude Code:
 
 ### Using the Skills
 
-Once installed, Claude Code will automatically activate these skills when you work on WordPress Ability or WordPress projects if you allow it too. The skills are designed to work together but can also be used independently in your other projects to scaffold WordPress plugins and environments.
-
-[.. TODO: Add subsections explaining each skill]
+Once installed, Claude Code will automatically activate these skills when you work on WordPress Ability or WordPress projects if you allow it to. The skills are designed to work together but can also be used independently in your other projects to scaffold WordPress plugins and environments.
 
 ## Architecture
 
@@ -112,10 +103,9 @@ pnpm env:start
 ## Configuration
 
 1. Navigate to **Settings > AI Ability Toolkit** in WordPress admin
-2. Select your AI provider (OpenAI or Anthropic)
-3. Enter your API key (encrypted before storage)
-4. Choose your model (e.g., `gpt-5` or `claude-sonnet-4.5`)
-5. Save settings
+2. Enter your OpenAI API key (encrypted before storage)
+3. Choose your model (e.g., `gpt-4o`, `gpt-4-turbo`, or `gpt-4`)
+4. Save settings
 
 ## Development Workflow
 
@@ -135,7 +125,7 @@ pnpm env:start
     - PHP classes: `packages/wp-ability-toolkit/includes/`
 
 3. **Test**:
-    - Chat widget appears in bottom- of wp-admin
+    - Chat widget appears in bottom-right of wp-admin
     - Try sending messages to test streaming responses
 
 ### Project Structure

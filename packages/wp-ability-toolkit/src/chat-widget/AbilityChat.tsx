@@ -8,8 +8,9 @@ import { copy } from '@wordpress/icons';
 import { AgentUI } from '@automattic/agenttic-ui';
 import '@automattic/agenttic-ui/index.css';
 import './agenttic-ui-overrides.css';
-import { useWordPressChat } from '@automattic/agenttic-ai-sdk-bridge';
+import { useWordPressChat } from '@emdashcodes/agenttic-ai-sdk-bridge';
 import { retrieveNavigationState, clearNavigationState } from '../abilities';
+import { debug } from '../debug';
 
 /**
  * Get the message to send for navigation completion
@@ -44,17 +45,17 @@ export function AbilityChat() {
 
 	// Log initial state on mount
 	useEffect(() => {
-		console.log('[Ability Toolkit] Chat initialized');
-		console.log('[Ability Toolkit] Should expand:', shouldExpand);
-		console.log(
+		debug('[Ability Toolkit] Chat initialized');
+		debug('[Ability Toolkit] Should expand:', shouldExpand);
+		debug(
 			'[Ability Toolkit] Navigation state exists:',
 			retrieveNavigationState() !== null
 		);
-		console.log(
+		debug(
 			'[Ability Toolkit] Chat open flag:',
 			localStorage.getItem('wp-ability-toolkit-chat-open')
 		);
-		console.log(
+		debug(
 			'[Ability Toolkit] Conversation storage:',
 			localStorage.getItem('wp-ability-toolkit-chat')?.substring(0, 200)
 		);
@@ -69,22 +70,22 @@ export function AbilityChat() {
 
 		const pendingNav = retrieveNavigationState();
 		if (!pendingNav) {
-			console.log('[Ability Toolkit] No pending navigation detected');
+			debug('[Ability Toolkit] No pending navigation detected');
 			return;
 		}
 
-		console.log(
+		debug(
 			'[Ability Toolkit] Pending navigation detected:',
 			pendingNav
 		);
 
 		// Wait for chat to be fully initialized
 		if (chatProps.isLoading) {
-			console.log('[Ability Toolkit] Chat still loading, waiting...');
+			debug('[Ability Toolkit] Chat still loading, waiting...');
 			return;
 		}
 
-		console.log(
+		debug(
 			'[Ability Toolkit] Chat initialized, messages:',
 			chatProps.messages?.length || 0
 		);
@@ -98,14 +99,14 @@ export function AbilityChat() {
 			try {
 				// Check if we have stored continuation data (new optimized flow)
 				if (pendingNav.assistantMessage && pendingNav.toolResult) {
-					console.log(
+					debug(
 						'[Ability Toolkit] Found stored tool call, continuing conversation'
 					);
-					console.log(
+					debug(
 						'[Ability Toolkit] Assistant message:',
 						pendingNav.assistantMessage
 					);
-					console.log(
+					debug(
 						'[Ability Toolkit] Tool result:',
 						pendingNav.toolResult
 					);
@@ -118,7 +119,7 @@ export function AbilityChat() {
 							pendingNav.assistantMessage,
 							pendingNav.toolResult
 						);
-						console.log(
+						debug(
 							'[Ability Toolkit] Navigation continuation completed'
 						);
 					} else {
@@ -128,19 +129,19 @@ export function AbilityChat() {
 					}
 				} else {
 					// Fallback to old flow (send synthetic user message)
-					console.log(
+					debug(
 						'[Ability Toolkit] No stored tool call, using fallback continuation'
 					);
 					const continuationMessage =
 						getNavigationCompletionMessage();
 
 					if (typeof chatProps.onSubmit === 'function') {
-						console.log(
+						debug(
 							'[Ability Toolkit] Sending continuation message:',
 							continuationMessage
 						);
 						await chatProps.onSubmit(continuationMessage);
-						console.log(
+						debug(
 							'[Ability Toolkit] Navigation continuation message sent successfully'
 						);
 					} else {
@@ -212,25 +213,6 @@ export function AbilityChat() {
 
 	return (
 		<div style={{ position: 'relative' }}>
-			{chatProps.error && (
-				<div
-					style={{
-						position: 'fixed',
-						bottom: '80px',
-						right: '20px',
-						maxWidth: '600px',
-						padding: '12px 16px',
-						backgroundColor: '#dc3232',
-						color: '#fff',
-						borderRadius: '4px',
-						boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-						fontSize: '14px',
-						zIndex: 999998,
-					}}
-				>
-					<strong>Error:</strong> {chatProps.error}
-				</div>
-			)}
 			<AgentUI
 				{...chatProps}
 				variant="floating"

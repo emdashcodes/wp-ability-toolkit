@@ -9,6 +9,11 @@ import { __ } from '@wordpress/i18n';
 import type { Ability } from '@wordpress/abilities';
 
 /**
+ * Internal dependencies
+ */
+import { debug } from '../debug';
+
+/**
  * Navigation state interface
  */
 interface NavigationState {
@@ -61,7 +66,7 @@ export function storeNavigationContinuation(
 			// Store the current URL - we'll only continue if URL has changed
 			state.initiatingUrl = window.location.href;
 			localStorage.setItem(NAVIGATION_STORAGE_KEY, JSON.stringify(state));
-			console.log(
+			debug(
 				'[Ability Toolkit] Stored navigation continuation data'
 			);
 		}
@@ -92,7 +97,7 @@ export function retrieveNavigationState(): NavigationState | null {
 			state.initiatingUrl &&
 			state.initiatingUrl === window.location.href
 		) {
-			console.log(
+			debug(
 				'[Ability Toolkit] Skipping continuation - still on same URL, navigation not complete'
 			);
 			return null;
@@ -185,14 +190,14 @@ export const navigateAbility: Ability = {
 
 		// Store navigation state for post-reload detection
 		storeNavigationState(path);
-		console.log('[Ability Toolkit] Stored navigation state for:', path);
+		debug('[Ability Toolkit] Stored navigation state for:', path);
 
 		// Store chat open state so it reopens after navigation
 		localStorage.setItem('wp-ability-toolkit-chat-open', 'true');
 
 		// Navigate after a delay (300ms for smooth UX)
 		setTimeout(() => {
-			console.log('[Ability Toolkit] Navigating to:', path);
+			debug('[Ability Toolkit] Navigating to:', path);
 			window.location.href = path;
 		}, 300);
 

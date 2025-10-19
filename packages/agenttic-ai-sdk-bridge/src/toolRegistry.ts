@@ -6,6 +6,7 @@
 // Import WordPress abilities client
 // @ts-ignore - WordPress abilities may not have types
 import { getAbilities, executeAbility } from '@wordpress/abilities';
+import { debug } from './debug.js';
 
 /**
  * Client ability definition (serializable, without callback)
@@ -46,14 +47,14 @@ export async function getAllClientAbilities(): Promise<ClientAbility[]> {
 	try {
 		// Get all abilities (server + client)
 		const abilities = await getAbilities();
-		console.log('[Tool Registry] All abilities:', abilities.length);
+		debug('[Tool Registry] All abilities:', abilities.length);
 
 		// Filter to only client-side abilities (those with callbacks)
 		// and serialize them (remove callback function)
 		const clientAbilities = abilities.filter(
 			(ability: any) => typeof ability.callback === 'function'
 		);
-		console.log(
+		debug(
 			'[Tool Registry] Client abilities found:',
 			clientAbilities.length,
 			clientAbilities.map((a: any) => a.name)
@@ -91,13 +92,13 @@ export async function executeClientAbility(
 			input && typeof input === 'object' && !Array.isArray(input)
 				? input
 				: {};
-		console.log(
+		debug(
 			`[Tool Registry] Executing ability ${name} with input:`,
 			abilityInput
 		);
 
 		const result = await executeAbility(name, abilityInput);
-		console.log(`[Tool Registry] Ability ${name} result:`, result);
+		debug(`[Tool Registry] Ability ${name} result:`, result);
 		return result;
 	} catch (error) {
 		console.error(`Failed to execute ability ${name}:`, error);

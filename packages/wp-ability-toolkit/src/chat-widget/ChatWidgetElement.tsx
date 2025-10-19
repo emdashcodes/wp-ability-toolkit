@@ -5,6 +5,7 @@
 
 import { createRoot } from '@wordpress/element';
 import { AbilityChat } from './AbilityChat';
+import { debug } from '../debug';
 
 declare global {
 	interface Window {
@@ -56,12 +57,30 @@ export class ChatWidgetElement extends HTMLElement {
 				font-size: 13px;
 				line-height: 1.4em;
 				color: #1e1e1e;
+				overflow: visible !important;
 			}
 
 			.ability-chat-shadow-container *,
 			.ability-chat-shadow-container *::before,
 			.ability-chat-shadow-container *::after {
 				box-sizing: border-box;
+			}
+
+			/* Tooltip z-index fixes for Shadow DOM */
+			/* Ensure tooltips render above all other content */
+			[title]:hover::after,
+			[data-tooltip]:hover::after,
+			.chart-tooltip,
+			.visx-tooltip {
+				z-index: 999999 !important;
+				position: relative !important;
+			}
+
+			/* Ensure tooltip containers don't clip tooltips */
+			[class*="Message-module"],
+			[class*="MessageActions-module"],
+			[class*="Chat-module"] {
+				overflow: visible !important;
 			}
 
 			/* Load the bundled agenttic-ui styles */
@@ -97,9 +116,9 @@ export class ChatWidgetElement extends HTMLElement {
 
 	private getCssUrls(): string[] {
 		const pluginUrl = window.wpAbilityToolkit?.pluginUrl || '';
-		console.log('[Ability Chat] Plugin URL:', pluginUrl);
+		debug('[Ability Chat] Plugin URL:', pluginUrl);
 		const cssUrl = `${pluginUrl}/build/chat-widget/index.css`;
-		console.log('[Ability Chat] Loading CSS from:', cssUrl);
+		debug('[Ability Chat] Loading CSS from:', cssUrl);
 		return [cssUrl];
 	}
 

@@ -182,13 +182,9 @@ class REST_API {
 		}
 
 		try {
-			if ( 'openai' === $provider ) {
-				$client = new OpenAI_Client( $api_key );
-				return $client->stream_chat( $model, $messages, $tools_manager );
-			} else {
-				$client = new Anthropic_Client( $api_key );
-				return $client->stream_chat( $model, $messages, $tools_manager );
-			}
+			// Only OpenAI is currently supported (Anthropic provider disabled - see TODO.md).
+			$client = new OpenAI_Client( $api_key );
+			return $client->stream_chat( $model, $messages, $tools_manager );
 		} catch ( \Exception $e ) {
 			// Log the error for debugging.
 			error_log( 'AI Ability Toolkit error: ' . $e->getMessage() );
