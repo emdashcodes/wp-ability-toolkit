@@ -1,16 +1,16 @@
 # Title (75 chars max, no prefix)
 
-[One paragraph summary of what changed and why it matters]
+[Summary of what changed and why it matters]
 
 Fixes #[issue] (if applicable)
 
 ## Why
 
-[One paragraph explaining the motivation/problem]
+[Summary explaining the motivation/problem]
 
 ## How
 
-[One paragraph explaining the technical approach]
+[Summary explaining the technical approach]
 
 - Bullet points for details if needed
 

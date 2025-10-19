@@ -3,7 +3,7 @@
  * Based on agenttic-client's conversation storage implementation
  */
 
-import React from 'react';
+import { createElement } from '@wordpress/element';
 import type { UIMessage, ToolCallContent } from './types.js';
 import { ToolCall } from './components/ToolCall.js';
 
@@ -114,7 +114,7 @@ function serializableToMessage(
 				// Reconstruct the ToolCall component
 				const toolCallData = contentItem.componentData;
 				const ToolCallWrapper = (props: any) =>
-					React.createElement(ToolCall, { toolCall: props.toolCall });
+					createElement(ToolCall, { toolCall: props.toolCall });
 
 				return {
 					type: 'component' as const,

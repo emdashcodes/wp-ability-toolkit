@@ -6,8 +6,19 @@
 // Main hook
 export { useWordPressChat } from './useWordPressChat.js';
 
+// Extracted hooks
+export { useConversationStorage } from './hooks/useConversationStorage.js';
+export { useMessageConverter } from './hooks/useMessageConverter.js';
+export { useAbortController } from './hooks/useAbortController.js';
+export { useStreamingRequest } from './hooks/useStreamingRequest.js';
+export { useToolCallHandler } from './hooks/useToolCallHandler.js';
+
 // Debug utility
 export { debug } from './debug.js';
+
+// Utilities
+export { parseErrorResponse } from './utils/errorParser.js';
+export { formatToolContent } from './utils/toolFormatter.js';
 
 // Components
 export { ToolCall } from './components/ToolCall.js';
@@ -51,10 +62,18 @@ export type {
 } from './types.js';
 
 export type { ToolCallProps } from './components/ToolCall.js';
-export type { StreamChunk, ToolCallEvent } from './streamAdapter.js';
+export type {
+	StreamChunk,
+	ToolCallEvent,
+	ServerToolCallEvent,
+} from './streamAdapter.js';
 export type { DeltaAccumulatorOptions } from './deltaAccumulator.js';
 export type { ConversationData } from './conversationStorage.js';
 export type {
 	ToolCall as ToolCallRequest,
 	ToolResult,
 } from './toolRegistry.js';
+export type {
+	StreamingRequestConfig,
+	StreamingRequestPayload,
+} from './hooks/useStreamingRequest.js';
