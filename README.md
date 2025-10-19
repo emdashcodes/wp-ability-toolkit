@@ -249,8 +249,8 @@ This project builds upon and integrates with:
 
 - **[WordPress Abilities API](https://github.com/wordpress/abilities-api)** - WordPress Abilities Team & WordPress AI Team at Automattic
 - **[Agenttic UI](https://www.npmjs.com/package/@automattic/agenttic-ui)** - Automattic
-- **Claude Code** - Anthropic
-- **WordPress** - The WordPress Community
+- **[Claude Code](https://docs.claude.com/en/docs/claude-code/overview)** - Anthropic
+- **[WordPress](https://wordpress.org)** - WordPress Team
 
 ## License
 
