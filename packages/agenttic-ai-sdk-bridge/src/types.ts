@@ -139,4 +139,7 @@ export interface UseWordPressChatReturn {
 
 	// Abort control
 	abortCurrentRequest: () => void;
+
+	// Conversation management
+	clearConversation: () => void;
 }

@@ -1,11 +1,10 @@
 /**
  * AgenticUI Overrides
- * Fixes for @automattic/agenttic-ui integration issues
+ * Minimal, clean fixes for @automattic/agenttic-ui integration
  */
 
 /* ========================================
  * Message Spacing
- * Reduce spacing between messages for tighter layout
  * ======================================== */
 
 [class*='Message-module_message'],
@@ -14,8 +13,8 @@
 }
 
 /* ========================================
- * Tool Call Width Constraint Fixes
- * Ensures tool call components don't cause horizontal scrolling
+ * Tool Call Width Constraints
+ * Prevent horizontal overflow from tool call components
  * ======================================== */
 
 /* Constrain message content areas */
@@ -28,13 +27,16 @@
 	overflow-wrap: break-word !important;
 }
 
-/* Ensure component containers don't overflow */
-[class*='component-wrapper'],
-[class*='ComponentWrapper'],
-.component-container {
-	max-width: 100% !important;
+/* Ensure all flex containers allow shrinking */
+[class*='message'] {
 	min-width: 0 !important;
-	overflow: hidden !important;
+}
+
+/* Force tool call wrapper to respect container */
+.tool-call-wrapper {
+	max-width: 100% !important;
+	width: 100% !important;
+	min-width: 0 !important;
 	box-sizing: border-box !important;
 }
 
@@ -47,7 +49,11 @@ code {
 	box-sizing: border-box !important;
 }
 
-/* Code block copy button styling */
+/* ========================================
+ * Code Block Copy Button
+ * Hover-visible copy button for code blocks
+ * ======================================== */
+
 pre {
 	position: relative !important;
 }
@@ -95,22 +101,9 @@ pre:hover .code-block-copy-btn {
 	height: 16px !important;
 }
 
-/* Ensure all flex containers allow shrinking */
-[class*='message'] {
-	min-width: 0 !important;
-}
-
-/* Force tool call wrapper to respect container */
-.tool-call-wrapper {
-	max-width: 100% !important;
-	width: 100% !important;
-	min-width: 0 !important;
-	box-sizing: border-box !important;
-}
-
 /* ========================================
- * Cursor Behavior Fixes
- * Restrict grab cursor to header only, not entire chat
+ * Cursor Behavior
+ * Restrict grab cursor to header only
  * ======================================== */
 
 /* Remove grab cursor from floating chat container */
@@ -118,7 +111,6 @@ pre:hover .code-block-copy-btn {
 	cursor: auto !important;
 }
 
-/* Remove grabbing cursor on active state */
 [class*='Chat-module_container'][class*='Chat-module_floating']:active {
 	cursor: auto !important;
 }
@@ -132,7 +124,7 @@ pre:hover .code-block-copy-btn {
 	cursor: grabbing !important;
 }
 
-/* Ensure normal cursor on all interactive content */
+/* Ensure normal cursor on interactive content */
 [class*='Messages-module_container'],
 [class*='Message-module_message'],
 [class*='ChatFooter-module_container'],
@@ -144,7 +136,6 @@ a,
 	cursor: auto !important;
 }
 
-/* Override cursor for specific button states */
 button:not(:disabled),
 a,
 [role='button']:not([aria-disabled='true']) {
@@ -152,11 +143,10 @@ a,
 }
 
 /* ========================================
- * Message Actions Icon Sizing & Positioning
- * Fix icon size and layout for copy buttons
+ * Message Actions Icon Sizing
  * ======================================== */
 
-/* Allow message action icons to use their component-defined sizes */
+/* Allow message action icons to use component-defined sizes */
 [class*='MessageActions'] svg,
 [class*='MessageAction'] svg,
 [class*='message-actions'] svg {
@@ -166,7 +156,7 @@ a,
 	max-height: none !important;
 }
 
-/* Fix icon sizing in tool calls for consistency */
+/* Fix icon sizing in tool calls */
 .tool-call-wrapper svg,
 .tool-call-header svg,
 .tool-call-body svg {
@@ -178,87 +168,61 @@ a,
 	max-height: 18px !important;
 }
 
-/* Ensure message action buttons are properly sized */
-[class*='MessageActions'] button,
-[class*='MessageAction'] button {
+/* ========================================
+ * Custom Chat Header
+ * ======================================== */
+
+.wp-ability-toolkit-chat-header {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	padding: 8px;
+	gap: 4px;
+	flex-shrink: 0;
+}
+
+.wp-ability-toolkit-chat-header button {
+	min-width: 28px !important;
+	width: 28px !important;
+	height: 28px !important;
 	padding: 4px !important;
-	min-width: auto !important;
-	width: auto !important;
-	height: auto !important;
-	display: inline-flex !important;
-	align-items: center !important;
-	justify-content: center !important;
+	background: none !important;
+	border: none !important;
+	opacity: 0.7;
+	transition: opacity 0.2s ease;
 }
 
-/* Completely hide empty action containers - no space, no layout */
-[class*='Message'] [class*='actions']:empty,
-[class*='Message'] [class*='Actions']:empty,
-[class*='message'] [class*='actions']:empty,
-[class*='message'] [class*='Actions']:empty {
-	display: none !important;
-}
-
-/* Hide action containers with no buttons (but may have wrapper divs) */
-[class*='Message'] [class*='actions']:not(:has(button)),
-[class*='Message'] [class*='Actions']:not(:has(button)),
-[class*='message'] [class*='actions']:not(:has(button)),
-[class*='message'] [class*='Actions']:not(:has(button)) {
-	display: none !important;
-}
-
-/* Hide message actions by default (for containers that DO have buttons) */
-[class*='Message'] [class*='actions']:has(button),
-[class*='Message'] [class*='Actions']:has(button),
-[class*='message'] [class*='actions']:has(button),
-[class*='message'] [class*='Actions']:has(button) {
-	opacity: 0 !important;
-	transition: opacity 0.2s ease !important;
-}
-
-/* Show actions when hovering over the MESSAGE (not just the actions) */
-[class*='Message']:hover [class*='actions']:has(button),
-[class*='Message']:hover [class*='Actions']:has(button),
-[class*='message']:hover [class*='actions']:has(button),
-[class*='message']:hover [class*='Actions']:has(button) {
+.wp-ability-toolkit-chat-header button:hover {
 	opacity: 1 !important;
+	background: none !important;
 }
 
-/* Always show actions for tool calls */
-.tool-call-wrapper [class*='actions'],
-.tool-call-wrapper [class*='Actions'],
-.tool-call-body button {
-	opacity: 1 !important;
+.wp-ability-toolkit-chat-header button svg {
+	width: 20px !important;
+	height: 20px !important;
 }
 
-/* Fix user message actions positioning - render outside message bubble */
-/* Position message actions absolutely to right side aligned with message */
-div[class*='user'] {
-	position: relative !important;
-	margin-bottom: 0 !important;
+/* Ensure conversation view layout works with custom header */
+[data-slot="conversation-view"] {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
 }
 
-div[class*='user'] div[class*='actions'],
-div[class*='user'] div[class*='Actions'],
-div[class*='user'] [class*='MessageActions'],
-div[class*='user'] [class*='messageActions'] {
-	position: absolute !important;
-	right: 20px !important;
-	bottom: 0 !important;
-	top: auto !important;
-	left: auto !important;
-	transform: translateY(100%) !important;
-	margin: 0 !important;
-	display: flex !important;
-	justify-content: flex-end !important;
-	align-items: center !important;
-	padding: 0 !important;
-	width: auto !important;
-	max-width: fit-content !important;
+[data-slot="conversation-view"].with-custom-header {
+	justify-content: space-between;
+}
+
+.conversation-content {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	justify-content: flex-end;
 }
 
 /* ========================================
- * WordPress Snackbar Styling & Positioning
- * Custom styles for snackbar within chat widget
+ * WordPress Snackbar Positioning
  * ======================================== */
 
 .components-snackbar-list {

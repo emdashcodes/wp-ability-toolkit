@@ -423,6 +423,16 @@ export function useWordPressChat(
 		abortRequest();
 	}, [abortRequest]);
 
+	const clearConversation = useCallback(() => {
+		setMessages([]);
+		setError(null);
+		setSuggestions([]);
+		if (conversationStorageKey) {
+			localStorage.removeItem(conversationStorageKey);
+			debug('[useWordPressChat] Conversation cleared');
+		}
+	}, [conversationStorageKey, setMessages]);
+
 	return {
 		messages,
 		isProcessing,
@@ -438,5 +448,6 @@ export function useWordPressChat(
 		messageActionsRegistrations: _messageActionsRegistrations,
 		addMessage,
 		abortCurrentRequest,
+		clearConversation,
 	};
 }

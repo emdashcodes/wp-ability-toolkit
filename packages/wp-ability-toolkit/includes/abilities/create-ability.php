@@ -50,13 +50,11 @@ function register_create_ability() {
 				$instructions = <<<'INSTRUCTIONS'
 # Creating a New WordPress Ability
 
-To create a new WordPress Ability, you'll use the Claude Code marketplace skills included in this repository.
+To create a new WordPress Ability, the user will need the Claude Code marketplace skills included in this repository.
 
 ## Step 1: Verify the wordpress-ability-api Skill is Available
 
-The `wordpress-ability-api` skill should already be installed from the `emdashcodes/wp-ability-toolkit` marketplace.
-
-If you need to install it manually:
+Ask the user to install it manually via Claude Code if they need to:
 ```
 /plugin install wordpress-ability-api@emdashcodes-wp-ability-toolkit
 ```
@@ -70,11 +68,16 @@ Before creating the ability, use the `think` tool to:
 - Define what it should return
 - Consider permissions and security
 
+Define these answers with the user via conversation.
+
 ## Step 3: Tell Claude Code to Create the Ability
 
-Once you've thought through the design, tell Claude Code to activate the wordpress-ability-api skill and create your ability.
+Once you've thought through the design, provide the user with a prompt template for Claude Code.
 
-Example prompt:
+**IMPORTANT**: Return the prompt template in a markdown code block (using triple backticks) so the user can easily copy it.
+
+Below is the prompt the user should provide to Claude Code:
+
 ```
 Activate the wordpress-ability-api skill and create a [server-side/client-side] ability that [description of what it should do].
 
@@ -91,11 +94,10 @@ After the ability is created and registered:
 1. Reload this chat interface (or the WordPress admin page)
 2. Try using the new ability in a conversation
 3. Verify it works as expected
-
 INSTRUCTIONS;
 
 				$next_steps = sprintf(
-					'I recommend using the `think` tool first to brainstorm the ability design for %s. Then, activate the wordpress-ability-api skill and provide a clear description of what you want the ability to do.',
+					'I recommend using the `think` tool first to brainstorm the ability design for %s, have a conversation with the user. Then, have the user activate the wordpress-ability-api skillwith Claude Code to provide a clear description of the ability and the next steps.',
 					esc_html( $ability_description )
 				);
 
@@ -105,7 +107,6 @@ INSTRUCTIONS;
 				);
 			},
 			'permission_callback' => function () {
-				// Require admin capabilities to create new abilities
 				return current_user_can( 'manage_options' );
 			},
 			'meta'                => array(

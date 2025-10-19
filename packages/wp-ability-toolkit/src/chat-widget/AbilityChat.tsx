@@ -8,10 +8,18 @@ import {
 	useMemo,
 	useState,
 	createElement,
+	useCallback,
 } from '@wordpress/element';
 import { Icon } from '@wordpress/components';
 import { copy, check } from '@wordpress/icons';
-import { AgentUI } from '@automattic/agenttic-ui';
+import {
+	AgentUI,
+	AgentUIContainer,
+	AgentUIConversationView,
+	AgentUIMessages,
+	AgentUIFooter,
+	AgentUIInput,
+} from '@automattic/agenttic-ui';
 import '@automattic/agenttic-ui/index.css';
 import './agenttic-ui-overrides.css';
 import {
@@ -20,6 +28,7 @@ import {
 } from '@emdashcodes/agenttic-ai-sdk-bridge';
 import { retrieveNavigationState, clearNavigationState } from '../abilities';
 import { debug } from '../debug';
+import { ChatHeader } from './ChatHeader';
 
 /**
  * Get the message to send for navigation completion
@@ -42,10 +51,13 @@ export function AbilityChat() {
 	// Track which message was just copied (to show checkmark)
 	const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
 
-	// Check if chat should be initially expanded (e.g., after navigation)
-	const shouldExpand =
-		retrieveNavigationState() !== null ||
-		localStorage.getItem('wp-ability-toolkit-chat-open') === 'true';
+	// Track chat open state
+	const [isExpanded, setIsExpanded] = useState(() => {
+		return (
+			retrieveNavigationState() !== null ||
+			localStorage.getItem('wp-ability-toolkit-chat-open') === 'true'
+		);
+	});
 
 	const chatProps = useWordPressChat({
 		endpoint:
@@ -58,7 +70,7 @@ export function AbilityChat() {
 	// Log initial state on mount
 	useEffect(() => {
 		debug('[Ability Toolkit] Chat initialized');
-		debug('[Ability Toolkit] Should expand:', shouldExpand);
+		debug('[Ability Toolkit] Should expand:', isExpanded);
 		debug(
 			'[Ability Toolkit] Navigation state exists:',
 			retrieveNavigationState() !== null
@@ -71,7 +83,7 @@ export function AbilityChat() {
 			'[Ability Toolkit] Conversation storage:',
 			localStorage.getItem('wp-ability-toolkit-chat')?.substring(0, 200)
 		);
-	}, []);
+	}, [isExpanded]);
 
 	// Check for pending navigation and continue conversation with stored tool call
 	useEffect(() => {
@@ -185,19 +197,10 @@ export function AbilityChat() {
 		chatProps.registerMessageActions({
 			id: 'copy-message',
 			actions: (message) => {
-				// Debug logging
-				console.log('[Copy Actions] Message:', {
-					id: message.id,
-					role: message.role,
-					disabled: message.disabled,
-					contentTypes: message.content?.map((c) => c.type),
-					hasComponent: message.content?.some(
-						(c) => c.type === 'component'
-					),
-					hasText: message.content?.some(
-						(c) => c.type === 'text' && c.text
-					),
-				});
+				// Don't show copy button on user messages
+				if (message.role === 'user') {
+					return [];
+				}
 
 				// Don't show copy button for tool call messages (they have their own icons)
 				// Tool calls are agent messages with component content
@@ -205,7 +208,6 @@ export function AbilityChat() {
 					message.role === 'agent' &&
 					message.content?.some((c) => c.type === 'component')
 				) {
-					console.log('[Copy Actions] Skipping - has component');
 					return [];
 				}
 
@@ -215,17 +217,13 @@ export function AbilityChat() {
 				);
 
 				if (!hasTextContent) {
-					console.log('[Copy Actions] Skipping - no text content');
 					return [];
 				}
 
 				// Don't show if message is disabled (hidden system messages)
 				if (message.disabled) {
-					console.log('[Copy Actions] Skipping - disabled');
 					return [];
 				}
-
-				console.log('[Copy Actions] Showing action for message:', message.id);
 
 				// Show checkmark if this message was just copied
 				const isCopied = copiedMessageId === message.id;
@@ -291,16 +289,65 @@ export function AbilityChat() {
 		});
 	}, [chatProps.messages, chatProps.messageActionsRegistrations]);
 
+	// Handle clear conversation with confirmation
+	const handleClear = useCallback(() => {
+		if (
+			window.confirm(
+				'Are you sure you want to clear the conversation? This cannot be undone.'
+			)
+		) {
+			chatProps.clearConversation();
+		}
+	}, [chatProps]);
+
+	// Handle minimize/close
+	const handleClose = useCallback(() => {
+		setIsExpanded(false);
+		localStorage.setItem('wp-ability-toolkit-chat-open', 'false');
+	}, []);
+
+	// Handle expand
+	const handleExpand = useCallback(() => {
+		setIsExpanded(true);
+		localStorage.setItem('wp-ability-toolkit-chat-open', 'true');
+	}, []);
+
 	return (
 		<div style={{ position: 'relative' }}>
-			<AgentUI
-				{...chatProps}
+			<AgentUIContainer
 				messages={messagesWithActions}
+				isProcessing={chatProps.isProcessing}
+				error={chatProps.error}
+				onSubmit={chatProps.onSubmit}
+				suggestions={chatProps.suggestions}
+				clearSuggestions={chatProps.clearSuggestions}
 				variant="floating"
+				onClose={handleClose}
+				onExpand={handleExpand}
+				floatingChatState={isExpanded ? 'expanded' : 'collapsed'}
 				placeholder="Ask me anything..."
 				expandOnClick={true}
-				floatingChatState={shouldExpand ? 'expanded' : undefined}
-			/>
+				className="agenttic"
+			>
+				<AgentUIConversationView className="with-custom-header">
+					<ChatHeader onClear={handleClear} onMinimize={handleClose} />
+					<div
+						className="conversation-content"
+						style={{
+							display: 'flex',
+							flexDirection: 'column',
+							flex: 1,
+							minHeight: 0,
+							justifyContent: 'flex-end',
+						}}
+					>
+						<AgentUIMessages />
+						<AgentUIFooter>
+							<AgentUIInput />
+						</AgentUIFooter>
+					</div>
+				</AgentUIConversationView>
+			</AgentUIContainer>
 		</div>
 	);
 }

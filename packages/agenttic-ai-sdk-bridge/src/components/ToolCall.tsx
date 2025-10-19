@@ -14,6 +14,7 @@ import {
 	chevronDown,
 	copySmall,
 } from '@wordpress/icons';
+import ReactMarkdown from 'react-markdown';
 import { copyToClipboard } from '../utils/copyToClipboard.js';
 import type { ToolCallContent } from '../types.js';
 
@@ -26,6 +27,133 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 	const [copiedInput, setCopiedInput] = useState(false);
 	const [copiedOutput, setCopiedOutput] = useState(false);
 	const [copiedInfo, setCopiedInfo] = useState(false);
+	const [copiedThought, setCopiedThought] = useState(false);
+
+	// Special rendering for think ability
+	const isThinkAbility = toolCall.name === 'wp-ability-toolkit/think';
+
+	if (isThinkAbility) {
+		const thought =
+			toolCall.output &&
+			typeof toolCall.output === 'object' &&
+			'thought' in toolCall.output
+				? (toolCall.output as { thought: string }).thought
+				: typeof toolCall.output === 'string'
+					? toolCall.output
+					: null;
+
+		const isStreaming = toolCall.status === 'pending';
+		const isComplete = toolCall.status === 'success';
+
+		return (
+			<div
+				style={{
+					marginTop: '2px',
+					marginBottom: '4px',
+					fontFamily:
+						'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
+				}}
+			>
+				{/* Trigger button */}
+				<button
+					onClick={() => setIsOpen(!isOpen)}
+					style={{
+						display: 'flex',
+						alignItems: 'center',
+						gap: '8px',
+						width: '100%',
+						padding: '0',
+						background: 'none',
+						border: 'none',
+						cursor: 'pointer',
+						fontSize: '13px',
+						color: '#757575',
+						transition: 'color 0.15s ease',
+						outline: 'none',
+					}}
+					onMouseEnter={(e) => {
+						e.currentTarget.style.color = '#1e1e1e';
+					}}
+					onMouseLeave={(e) => {
+						e.currentTarget.style.color = '#757575';
+					}}
+				>
+					<span>
+						{isStreaming
+							? 'Thinking...'
+							: isComplete
+								? 'Thought for a moment'
+								: 'Thinking...'}
+					</span>
+					<Icon
+						icon={isOpen ? chevronUp : chevronDown}
+						size={16}
+						style={{
+							transition: 'transform 0.2s ease',
+							color: 'inherit',
+						}}
+					/>
+				</button>
+
+				{/* Collapsible content */}
+				{isOpen && thought && (
+					<div
+						style={{
+							marginTop: '6px',
+							position: 'relative',
+						}}
+					>
+						<div
+							style={{
+								padding: '12px 16px',
+								backgroundColor: '#f6f7f7',
+								borderLeft: '3px solid #8c8f94',
+								borderRadius: '4px',
+								fontSize: '13px',
+								lineHeight: '1.6',
+								color: '#50575e',
+								animation: 'slideIn 0.2s ease',
+							}}
+						>
+							<ReactMarkdown>{thought}</ReactMarkdown>
+						</div>
+						<Tooltip text={copiedThought ? 'Copied!' : 'Copy thought'}>
+							<Button
+								icon={copiedThought ? check : copySmall}
+								size="small"
+								variant="secondary"
+								onClick={(e: React.MouseEvent) => {
+									e.stopPropagation();
+									copyToClipboard(thought, setCopiedThought);
+								}}
+								style={{
+									position: 'absolute',
+									top: '8px',
+									right: '8px',
+									minWidth: 'auto',
+									height: '24px',
+									padding: '0 8px',
+								}}
+							/>
+						</Tooltip>
+					</div>
+				)}
+
+				<style>{`
+					@keyframes slideIn {
+						from {
+							opacity: 0;
+							transform: translateY(-4px);
+						}
+						to {
+							opacity: 1;
+							transform: translateY(0);
+						}
+					}
+				`}</style>
+			</div>
+		);
+	}
 
 	const getStatusIcon = () => {
 		switch (toolCall.status) {
@@ -74,8 +202,8 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 		<div
 			className={`tool-call-wrapper ${getStatusClass()}`}
 			style={{
-				marginTop: '4px',
-				marginBottom: '4px',
+				marginTop: '2px',
+				marginBottom: '2px',
 				border: '1px solid #dcdcde',
 				borderRadius: '4px',
 				overflow: 'hidden',
