@@ -12,6 +12,8 @@ A toolkit for WordPress plugin development, testing AI agent integrations, and W
 - **OpenAI Support** - OpenAI (GPT-4, GPT-4o)
 - **Claude Code Skills** - Specialized development skills for plugin creation, validation, and environment management
 
+[Watch a ~6 minute demo of the toolkit in action](https://emdash.codes/wp-ability-toolkit/#demo).
+
 ## WordPress Abilities
 
 The WP Ability Toolkit includes four built-in abilities that provide essential functionality for the AI assistant
