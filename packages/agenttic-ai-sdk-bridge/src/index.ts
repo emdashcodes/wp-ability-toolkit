@@ -55,7 +55,6 @@ export type { StreamChunk, ToolCallEvent } from './streamAdapter.js';
 export type { DeltaAccumulatorOptions } from './deltaAccumulator.js';
 export type { ConversationData } from './conversationStorage.js';
 export type {
-	ClientAbility as ClientAbilityDef,
 	ToolCall as ToolCallRequest,
 	ToolResult,
 } from './toolRegistry.js';

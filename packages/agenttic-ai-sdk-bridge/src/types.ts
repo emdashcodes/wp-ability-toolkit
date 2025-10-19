@@ -2,53 +2,39 @@
  * Type definitions for WordPress REST API ↔ Agenttic UI bridge
  */
 
-import type { ReactNode } from 'react';
+import type {
+	UIMessage as AgentticUIMessage,
+	Suggestion as AgentticSuggestion,
+} from '@automattic/agenttic-client';
+import type { MessageAction } from '@automattic/agenttic-ui';
 
-// UI Message format (matches Agenttic UI)
-export interface UIMessage {
-	id: string;
-	role: 'user' | 'agent';
-	content: Array<{
-		type: 'text' | 'image_url' | 'component';
-		text?: string;
-		image_url?: string;
-		component?: React.ComponentType;
-		componentProps?: any;
-	}>;
-	timestamp: number;
-	archived: boolean;
-	showIcon: boolean;
-	icon?: string;
-	actions?: UIMessageAction[];
+import type {
+	Ability,
+	AbilityInput,
+	AbilityOutput,
+} from '@wordpress/abilities-api';
+
+export interface UIMessage extends AgentticUIMessage {
 	disabled?: boolean;
 }
 
-// Tool call content
+export type UIMessageAction = MessageAction;
+
+/**
+ * Suggestion definition
+ * Extended from Agenttic Client's Suggestion type to add custom action handler
+ */
+export interface Suggestion extends AgentticSuggestion {
+	action?: () => void | Promise<void>; // WordPress-specific extension
+}
+
 export interface ToolCallContent {
 	id: string;
 	name: string;
-	input: any;
+	input: AbilityInput;
 	status: 'pending' | 'success' | 'error';
-	output?: any;
+	output?: AbilityOutput;
 	error?: string;
-}
-
-export interface UIMessageAction {
-	id: string;
-	icon?: ReactNode;
-	label: string;
-	onClick: (message: UIMessage) => void | Promise<void>;
-	tooltip?: string;
-	disabled?: boolean;
-	pressed?: boolean;
-	showLabel?: boolean;
-}
-
-export interface Suggestion {
-	id: string;
-	label: string;
-	prompt?: string;
-	action?: () => void | Promise<void>;
 }
 
 export interface MessageActionsRegistration {
@@ -56,22 +42,36 @@ export interface MessageActionsRegistration {
 	actions: UIMessageAction[] | ((message: UIMessage) => UIMessageAction[]);
 }
 
-// WordPress REST API request/response types
+export interface OpenAIToolCall {
+	id: string;
+	type: 'function';
+	function: {
+		name: string;
+		arguments: string; // JSON string
+	};
+}
+
 export interface WordPressMessage {
 	role: 'user' | 'assistant' | 'tool';
-	content: string | any[]; // Can be string or array for tool results
-	tool_calls?: any[]; // For OpenAI format tool calls
+	content:
+		| string
+		| Array<{ type: string; text?: string; [key: string]: unknown }>;
+	tool_calls?: OpenAIToolCall[];
 	tool_call_id?: string; // For OpenAI format tool results
 }
 
-export interface ClientAbility {
-	name: string;
-	label: string;
-	description: string;
-	category?: string;
-	input_schema?: any;
-	output_schema?: any;
-}
+/**
+ * Client-side ability definition
+ */
+export type ClientAbility = Pick<
+	Ability,
+	| 'name'
+	| 'label'
+	| 'description'
+	| 'category'
+	| 'input_schema'
+	| 'output_schema'
+>;
 
 export interface WordPressChatRequest {
 	messages: WordPressMessage[];
@@ -113,9 +113,7 @@ export interface UseWordPressChatConfig {
 	conversationStorageKey?: string;
 }
 
-// Hook return (matches useAgentChat interface)
 export interface UseWordPressChatReturn {
-	// AgentUI props
 	messages: UIMessage[];
 	isProcessing: boolean;
 	error: string | null;

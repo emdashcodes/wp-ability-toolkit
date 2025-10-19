@@ -3,7 +3,7 @@
 		"target": "ES2020",
 		"module": "ESNext",
 		"lib": ["ES2020", "DOM", "DOM.Iterable"],
-		"moduleResolution": "bundler",
+		"moduleResolution": "node",
 		"jsx": "react",
 		"declaration": true,
 		"declarationMap": true,
@@ -15,7 +15,13 @@
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,
-		"allowSyntheticDefaultImports": true
+		"allowSyntheticDefaultImports": true,
+		"baseUrl": ".",
+		"paths": {
+			"@wordpress/abilities-api": [
+				"../wp-ability-toolkit/vendor/wordpress/abilities-api/packages/client/build-types/index.d.ts"
+			]
+		}
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules", "dist"]

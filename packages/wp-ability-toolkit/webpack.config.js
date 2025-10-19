@@ -25,6 +25,6 @@ module.exports = {
 		'@wordpress/components': 'wp.components',
 		'@wordpress/api-fetch': 'wp.apiFetch',
 		'@wordpress/data': 'wp.data',
-		// Note: @wordpress/icons is NOT externalized - it will be bundled
+		'@wordpress/abilities-api': 'wp.abilities',
 	},
 };

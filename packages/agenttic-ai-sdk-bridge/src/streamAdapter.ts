@@ -2,18 +2,21 @@
  * Adapts WordPress REST API streaming responses to Agenttic UI format
  */
 
+import type { AbilityInput, AbilityOutput } from '@wordpress/abilities-api';
+import type { OpenAIToolCall } from './types.js';
+
 export interface ToolCallEvent {
 	id: string;
 	name: string;
-	input: any;
+	input: AbilityInput;
 }
 
 export interface ServerToolCallEvent {
 	id: string;
 	name: string;
-	input: any;
+	input: AbilityInput;
 	status: 'pending' | 'success' | 'error';
-	output?: any;
+	output?: AbilityOutput;
 	error?: string;
 }
 
@@ -21,14 +24,14 @@ export interface StreamChunk {
 	id?: string;
 	role?: 'assistant';
 	content?: string;
-	delta?: string | { content?: string; [key: string]: any };
+	delta?: string | { content?: string; [key: string]: unknown };
 	done?: boolean;
 	client_tool_call?: ToolCallEvent;
 	server_tool_call?: ServerToolCallEvent;
 	assistant_message?: {
 		role: 'assistant';
 		content: string;
-		tool_calls: any[];
+		tool_calls: OpenAIToolCall[];
 	};
 	error?: string;
 }

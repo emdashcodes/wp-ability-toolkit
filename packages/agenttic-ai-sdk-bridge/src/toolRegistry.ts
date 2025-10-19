@@ -3,22 +3,14 @@
  * Manages client-side WordPress abilities as tools
  */
 
-// Import WordPress abilities client
-// @ts-ignore - WordPress abilities may not have types
-import { getAbilities, executeAbility } from '@wordpress/abilities';
+import { getAbilities, executeAbility } from '@wordpress/abilities-api';
+import type {
+	Ability,
+	AbilityInput,
+	AbilityOutput,
+} from '@wordpress/abilities-api';
 import { debug } from './debug.js';
-
-/**
- * Client ability definition (serializable, without callback)
- */
-export interface ClientAbility {
-	name: string;
-	label: string;
-	description: string;
-	category?: string;
-	input_schema?: any;
-	output_schema?: any;
-}
+import type { ClientAbility } from './types.js';
 
 /**
  * Tool call from AI
@@ -26,7 +18,7 @@ export interface ClientAbility {
 export interface ToolCall {
 	id: string;
 	name: string;
-	input: any;
+	input: AbilityInput;
 }
 
 /**
@@ -35,7 +27,7 @@ export interface ToolCall {
 export interface ToolResult {
 	id: string;
 	name: string;
-	output: any;
+	output: AbilityOutput;
 	error?: string;
 }
 
@@ -52,22 +44,24 @@ export async function getAllClientAbilities(): Promise<ClientAbility[]> {
 		// Filter to only client-side abilities (those with callbacks)
 		// and serialize them (remove callback function)
 		const clientAbilities = abilities.filter(
-			(ability: any) => typeof ability.callback === 'function'
+			(ability: Ability) => typeof ability.callback === 'function'
 		);
 		debug(
 			'[Tool Registry] Client abilities found:',
 			clientAbilities.length,
-			clientAbilities.map((a: any) => a.name)
+			clientAbilities.map((a: Ability) => a.name)
 		);
 
-		return clientAbilities.map((ability: any) => ({
-			name: ability.name,
-			label: ability.label,
-			description: ability.description,
-			category: ability.category,
-			input_schema: ability.input_schema,
-			output_schema: ability.output_schema,
-		}));
+		return clientAbilities.map(
+			(ability: Ability): ClientAbility => ({
+				name: ability.name,
+				label: ability.label,
+				description: ability.description,
+				category: ability.category,
+				input_schema: ability.input_schema,
+				output_schema: ability.output_schema,
+			})
+		);
 	} catch (error) {
 		console.error('Failed to load client abilities:', error);
 		return [];
@@ -83,8 +77,8 @@ export async function getAllClientAbilities(): Promise<ClientAbility[]> {
  */
 export async function executeClientAbility(
 	name: string,
-	input: any
-): Promise<any> {
+	input: AbilityInput
+): Promise<AbilityOutput> {
 	try {
 		// Ensure input is always a plain object (not array, not null)
 		// Arrays and null will be converted to empty object
