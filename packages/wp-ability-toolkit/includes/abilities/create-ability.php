@@ -20,7 +20,7 @@ function register_create_ability() {
 		'wp-ability-toolkit/create-ability',
 		array(
 			'label'               => __( 'Create Ability', 'wp-ability-toolkit' ),
-			'description'         => __( 'Guides the user through creating a new WordPress Ability using Claude Code skills. Use this when the user wants to extend the AI assistant\'s capabilities with new abilities. This will provide instructions for setting up the Claude Code wordpress-ability-api skill and crafting the right prompt.', 'wp-ability-toolkit' ),
+			'description'         => __( 'Guides the user through defining requirements for a new WordPress Ability. You will help articulate what the ability should do and provide a prompt template for the user to give to Claude Code. NEVER write implementation code yourself - Claude Code handles all PHP/TypeScript implementation via the wordpress-ability-api skill.', 'wp-ability-toolkit' ),
 			'category'            => 'meta-tools',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -50,54 +50,66 @@ function register_create_ability() {
 				$instructions = <<<'INSTRUCTIONS'
 # Creating a New WordPress Ability
 
-To create a new WordPress Ability, the user will need the Claude Code marketplace skills included in this repository.
+**CRITICAL: Your Role vs Claude Code's Role**
 
-## Step 1: Verify the wordpress-ability-api Skill is Available
+- **You (WordPress AI)**: Brainstorm the concept - name, label, and explanation
+- **Claude Code**: Determine and implement ALL technical details (schemas, callbacks, permissions, annotations, code)
+- **NEVER specify schemas, callbacks, or implementation details yourself**
 
-Ask the user to install it manually via Claude Code if they need to:
+## Step 1: Use the Think Tool
+
+Use the `think` tool to brainstorm with the user:
+- What should this ability do? (in plain language)
+- Server-side (PHP) or client-side (JavaScript)?
+- What might it need as input? (conceptually, not schemas)
+- What should it return? (conceptually, not schemas)
+- Who should be able to use it? (user type, not code)
+
+## Step 2: Define Name and Label
+
+Work with the user to define:
+- **Name**: Format "namespace/ability-name" (e.g., "my-plugin/send-notification")
+  - Must be lowercase, hyphens, exactly one slash
+  - Namespace should match plugin slug
+- **Label**: Short human-readable name (e.g., "Send Notification")
+
+## Step 3: Write a Brainstorm Explanation
+
+Compose a 1-2 paragraph explanation that describes:
+- What the ability does
+- What kind of inputs it might accept (in plain language)
+- What it returns (in plain language)
+- Who should be able to use it
+- Any important behavioral notes
+
+## Step 4: Provide Prompt for Claude Code
+
+**CRITICAL:** You MUST wrap the prompt in a markdown code block using triple backticks (```) so the user can easily copy it.
+
+The format MUST be:
+
 ```
-/plugin install wordpress-ability-api@emdashcodes-wp-ability-toolkit
+Activate the wordpress-ability-api skill and create this ability:
+
+Name: [namespace/ability-name]
+Label: [Human Readable Label]
+Type: [server-side/client-side]
+
+Explanation:
+[Your 1-2 paragraph brainstorm explaining what it does, inputs, outputs, permissions, and behavior]
 ```
 
-## Step 2: Use the Think Tool to Plan
+**DO NOT provide the prompt as plain text.** It MUST be in a markdown code block with triple backticks.
 
-Before creating the ability, use the `think` tool to:
-- Define what the ability should do
-- Determine if it should be server-side (PHP) or client-side (JavaScript)
-- Identify what input parameters it needs
-- Define what it should return
-- Consider permissions and security
+**Claude Code will handle all schemas, callbacks, permissions, and implementation.**
 
-Define these answers with the user via conversation.
+## Step 5: After Creation
 
-## Step 3: Tell Claude Code to Create the Ability
-
-Once you've thought through the design, provide the user with a prompt template for Claude Code.
-
-**IMPORTANT**: Return the prompt template in a markdown code block (using triple backticks) so the user can easily copy it.
-
-Below is the prompt the user should provide to Claude Code:
-
-```
-Activate the wordpress-ability-api skill and create a [server-side/client-side] ability that [description of what it should do].
-
-It should:
-- Accept [input parameters]
-- Return [output data]
-- Be available to [permission level]
-- Belong to the [category-name] category
-```
-
-## Step 4: Test the Ability
-
-After the ability is created and registered:
-1. Reload this chat interface (or the WordPress admin page)
-2. Try using the new ability in a conversation
-3. Verify it works as expected
+Tell the user to reload this chat interface to see the new ability available.
 INSTRUCTIONS;
 
 				$next_steps = sprintf(
-					'I recommend using the `think` tool first to brainstorm the ability design for %s, have a conversation with the user. Then, have the user activate the wordpress-ability-api skillwith Claude Code to provide a clear description of the ability and the next steps.',
+					'IMPORTANT: Have a converstation with the user to define th erequirements and clear up any confusion. Work together to define a clear name, label, and explanation (NOT schemas or code). Then provide a prompt template for the user to give to Claude Code, which will handle all implementation details. Use the `think` tool first to help brainstorm the concept for %s. ',
 					esc_html( $ability_description )
 				);
 
