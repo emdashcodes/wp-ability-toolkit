@@ -24,7 +24,7 @@ class Ability_Tools_Manager {
 	 *
 	 * @return array Array of WP_Ability objects.
 	 */
-	public function get_server_abilities() {
+	public function get_server_abilities(): array {
 		if ( ! class_exists( 'WP_Abilities_Registry' ) ) {
 			return array();
 		}
@@ -38,7 +38,7 @@ class Ability_Tools_Manager {
 	 *
 	 * @param array $abilities Array of client ability definitions.
 	 */
-	public function set_client_abilities( $abilities ) {
+	public function set_client_abilities( array $abilities ): void {
 		$this->client_abilities = is_array( $abilities ) ? $abilities : array();
 	}
 
@@ -49,7 +49,7 @@ class Ability_Tools_Manager {
 	 * @param string $name Ability name with slash.
 	 * @return string Sanitized tool name.
 	 */
-	public function sanitize_tool_name( $name ) {
+	public function sanitize_tool_name( string $name ): string {
 		return str_replace( '/', '__', $name );
 	}
 
@@ -60,7 +60,7 @@ class Ability_Tools_Manager {
 	 * @param string $name Tool name with double underscore.
 	 * @return string Original ability name.
 	 */
-	public function unsanitize_tool_name( $name ) {
+	public function unsanitize_tool_name( string $name ): string {
 		return str_replace( '__', '/', $name );
 	}
 
@@ -69,7 +69,7 @@ class Ability_Tools_Manager {
 	 *
 	 * @return array Combined abilities array.
 	 */
-	public function get_all_abilities() {
+	public function get_all_abilities(): array {
 		$server_abilities = $this->get_server_abilities();
 		$merged = array();
 
@@ -104,7 +104,7 @@ class Ability_Tools_Manager {
 	 *
 	 * @return array OpenAI tools array.
 	 */
-	public function convert_to_openai_tools() {
+	public function convert_to_openai_tools(): array {
 		$abilities = $this->get_all_abilities();
 		$tools = array();
 
@@ -133,36 +133,6 @@ class Ability_Tools_Manager {
 		return $tools;
 	}
 
-	/**
-	 * Convert abilities to Anthropic tool format
-	 *
-	 * @return array Anthropic tools array.
-	 */
-	public function convert_to_anthropic_tools() {
-		$abilities = $this->get_all_abilities();
-		$tools = array();
-
-		foreach ( $abilities as $ability ) {
-			// Get input schema and ensure properties is an object, not array.
-			$input_schema = $ability['input_schema'] ?? array(
-				'type'       => 'object',
-				'properties' => new \stdClass(),
-			);
-
-			// Fix empty arrays in properties (PHP converts {} to []).
-			if ( isset( $input_schema['properties'] ) && is_array( $input_schema['properties'] ) && empty( $input_schema['properties'] ) ) {
-				$input_schema['properties'] = new \stdClass();
-			}
-
-			$tools[] = array(
-				'name'         => $this->sanitize_tool_name( $ability['name'] ),
-				'description'  => $ability['description'] ?? $ability['label'],
-				'input_schema' => $input_schema,
-			);
-		}
-
-		return $tools;
-	}
 
 	/**
 	 * Check if a tool is client-side
@@ -170,7 +140,7 @@ class Ability_Tools_Manager {
 	 * @param string $name Tool name (may be sanitized).
 	 * @return bool True if client-side tool.
 	 */
-	public function is_client_tool( $name ) {
+	public function is_client_tool( string $name ): bool {
 		// Convert sanitized name back to ability name.
 		$ability_name = $this->unsanitize_tool_name( $name );
 
@@ -189,7 +159,7 @@ class Ability_Tools_Manager {
 	 * @param array  $input Tool input parameters.
 	 * @return mixed Tool execution result or WP_Error.
 	 */
-	public function execute_server_tool( $name, $input = array() ) {
+	public function execute_server_tool( string $name, array $input = array() ) {
 		// Convert sanitized tool name back to ability name.
 		$ability_name = $this->unsanitize_tool_name( $name );
 
@@ -235,7 +205,7 @@ class Ability_Tools_Manager {
 	 * @param mixed $result Tool execution result.
 	 * @return string JSON-encoded result.
 	 */
-	public function format_tool_result( $result ) {
+	public function format_tool_result( $result ): string {
 		// Handle WP_Error.
 		if ( is_wp_error( $result ) ) {
 			return wp_json_encode(

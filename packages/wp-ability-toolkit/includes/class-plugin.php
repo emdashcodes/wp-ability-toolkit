@@ -120,7 +120,7 @@ class Plugin {
 	 * Add settings page to WordPress admin
 	 */
 	public function add_settings_page() {
-		add_management_page(
+		add_options_page(
 			__( 'WP Ability Toolkit', 'wp-ability-toolkit' ),
 			__( 'WP Ability Toolkit', 'wp-ability-toolkit' ),
 			'manage_options',
@@ -186,7 +186,7 @@ class Plugin {
 		);
 
 		// Enqueue settings page script if on settings page.
-		if ( 'tools_page_wp-ability-toolkit-settings' === $hook ) {
+		if ( 'settings_page_wp-ability-toolkit-settings' === $hook ) {
 			$settings_js_path = dirname( $this->plugin_file ) . '/build/admin/settings.js';
 
 			wp_enqueue_script(

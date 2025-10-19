@@ -12,6 +12,11 @@ namespace WP_Ability_Toolkit;
  */
 class REST_API {
 	/**
+	 * Maximum message content length (characters)
+	 */
+	const MAX_MESSAGE_LENGTH = 50000;
+
+	/**
 	 * Settings instance
 	 *
 	 * @var Settings
@@ -30,7 +35,7 @@ class REST_API {
 	/**
 	 * Register REST API routes
 	 */
-	public function register_routes() {
+	public function register_routes(): void {
 		register_rest_route(
 			'wp-ability-toolkit/v1',
 			'/chat',
@@ -94,27 +99,31 @@ class REST_API {
 	 */
 	public function validate_messages( $messages ) {
 		if ( ! is_array( $messages ) || empty( $messages ) ) {
-			return new \WP_Error( 'invalid_messages', 'Messages must be a non-empty array' );
+			return new \WP_Error( 'invalid_messages', __( 'Messages must be a non-empty array', 'wp-ability-toolkit' ) );
 		}
 
 		$valid_roles = array( 'system', 'user', 'assistant', 'tool' );
 
 		foreach ( $messages as $index => $message ) {
 			if ( ! is_array( $message ) ) {
-				return new \WP_Error( 'invalid_message_format', "Message at index {$index} must be an object" );
+				/* translators: %d: Message index number */
+				return new \WP_Error( 'invalid_message_format', sprintf( __( 'Message at index %d must be an object', 'wp-ability-toolkit' ), $index ) );
 			}
 
 			if ( ! isset( $message['role'] ) || ! isset( $message['content'] ) ) {
-				return new \WP_Error( 'missing_fields', "Message at index {$index} must have 'role' and 'content' fields" );
+				/* translators: %d: Message index number */
+				return new \WP_Error( 'missing_fields', sprintf( __( "Message at index %d must have 'role' and 'content' fields", 'wp-ability-toolkit' ), $index ) );
 			}
 
 			if ( ! in_array( $message['role'], $valid_roles, true ) ) {
-				return new \WP_Error( 'invalid_role', "Message at index {$index} has invalid role: {$message['role']}" );
+				/* translators: 1: Message index number, 2: Invalid role name */
+				return new \WP_Error( 'invalid_role', sprintf( __( 'Message at index %1$d has invalid role: %2$s', 'wp-ability-toolkit' ), $index, $message['role'] ) );
 			}
 
-			// Validate content length (50,000 chars max).
-			if ( is_string( $message['content'] ) && strlen( $message['content'] ) > 50000 ) {
-				return new \WP_Error( 'content_too_long', "Message at index {$index} exceeds maximum length of 50,000 characters" );
+			// Validate content length.
+			if ( is_string( $message['content'] ) && strlen( $message['content'] ) > self::MAX_MESSAGE_LENGTH ) {
+				/* translators: 1: Message index number, 2: Maximum allowed character length */
+				return new \WP_Error( 'content_too_long', sprintf( __( 'Message at index %1$d exceeds maximum length of %2$s characters', 'wp-ability-toolkit' ), $index, number_format_i18n( self::MAX_MESSAGE_LENGTH ) ) );
 			}
 		}
 
@@ -127,7 +136,7 @@ class REST_API {
 	 * @param array $messages Messages array.
 	 * @return array Sanitized messages.
 	 */
-	public function sanitize_messages( $messages ) {
+	public function sanitize_messages( array $messages ): array {
 		// Messages are already validated, so just return as-is.
 		// Content sanitization is handled by the AI clients.
 		return $messages;
@@ -152,13 +161,13 @@ class REST_API {
 
 			if ( $has_stored_key ) {
 				return new \WP_REST_Response(
-					array( 'error' => 'Failed to decrypt API key. The encryption format may have changed. Please re-enter your API key in Settings.' ),
+					array( 'error' => __( 'Failed to decrypt API key. The encryption format may have changed. Please re-enter your API key in Settings.', 'wp-ability-toolkit' ) ),
 					400
 				);
 			}
 
 			return new \WP_REST_Response(
-				array( 'error' => 'API key not configured. Please configure your API key in Settings > AI Ability Toolkit.' ),
+				array( 'error' => __( 'API key not configured. Please configure your API key in Settings > AI Ability Toolkit.', 'wp-ability-toolkit' ) ),
 				400
 			);
 		}
@@ -182,7 +191,7 @@ class REST_API {
 		}
 
 		try {
-			// Only OpenAI is currently supported (Anthropic provider disabled - see TODO.md).
+			// Only OpenAI is currently supported.
 			$client = new OpenAI_Client( $api_key );
 			return $client->stream_chat( $model, $messages, $tools_manager );
 		} catch ( \Exception $e ) {
@@ -199,11 +208,11 @@ class REST_API {
 				 stripos( $error_message, 'authentication' ) !== false ||
 				 stripos( $error_message, '401' ) !== false ) {
 				$status_code = 401;
-				$error_message = 'Invalid API key. Please check your API key in Settings > AI Ability Toolkit.';
+				$error_message = __( 'Invalid API key. Please check your API key in Settings > AI Ability Toolkit.', 'wp-ability-toolkit' );
 			} elseif ( stripos( $error_message, 'rate limit' ) !== false || // Detect rate limiting.
 					 stripos( $error_message, '429' ) !== false ) {
 				$status_code = 429;
-				$error_message = 'Rate limit exceeded. Please try again in a moment.';
+				$error_message = __( 'Rate limit exceeded. Please try again in a moment.', 'wp-ability-toolkit' );
 			} elseif ( stripos( $error_message, '400' ) !== false ) { // Detect API errors.
 				$status_code = 400;
 			}
@@ -244,7 +253,7 @@ class REST_API {
 
 		if ( empty( $provider ) || empty( $model ) ) {
 			return new \WP_REST_Response(
-				array( 'error' => 'Provider and model are required' ),
+				array( 'error' => __( 'Provider and model are required', 'wp-ability-toolkit' ) ),
 				400
 			);
 		}
@@ -272,7 +281,7 @@ class REST_API {
 		return new \WP_REST_Response(
 			array(
 				'success' => true,
-				'message' => 'Settings saved successfully',
+				'message' => __( 'Settings saved successfully', 'wp-ability-toolkit' ),
 			),
 			200
 		);

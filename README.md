@@ -243,6 +243,15 @@ This hook is only meant for testing and debugging Abilities. If you want to ship
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+## Credits
+
+This project builds upon and integrates with:
+
+- **[WordPress Abilities API](https://github.com/wordpress/abilities-api)** - WordPress Abilities Team & WordPress AI Team at Automattic
+- **[Agenttic UI](https://www.npmjs.com/package/@automattic/agenttic-ui)** - Automattic
+- **Claude Code** - Anthropic
+- **WordPress** - The WordPress Community
+
 ## License
 
 GPL-2.0-or-later
@@ -250,4 +259,4 @@ GPL-2.0-or-later
 ## Author
 
 Em - [@emdashcodes](https://emdash.codes)
-[{Github}](https://github.com/emdashcodes)
+[GitHub](https://github.com/emdashcodes)

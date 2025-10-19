@@ -21,7 +21,7 @@ class Settings {
 	/**
 	 * Register settings with WordPress
 	 */
-	public function register() {
+	public function register(): void {
 		register_setting(
 			'wp_ability_toolkit',
 			self::OPTION_PROVIDER,
@@ -58,8 +58,8 @@ class Settings {
 	 * @param string $value Provider value.
 	 * @return string Sanitized provider.
 	 */
-	public function sanitize_provider( $value ) {
-		// Only OpenAI is supported currently (Anthropic provider is disabled - see TODO.md).
+	public function sanitize_provider( string $value ): string {
+		// Only OpenAI is currently supported.
 		return 'openai';
 	}
 
@@ -69,7 +69,7 @@ class Settings {
 	 * @param string $value API key.
 	 * @return string Encrypted API key.
 	 */
-	public function encrypt_api_key( $value ) {
+	public function encrypt_api_key( string $value ): string {
 		if ( empty( $value ) ) {
 			return '';
 		}
@@ -110,7 +110,7 @@ class Settings {
 	 * @param string $encrypted_value Encrypted API key.
 	 * @return string Decrypted API key.
 	 */
-	public function decrypt_api_key( $encrypted_value ) {
+	public function decrypt_api_key( string $encrypted_value ): string {
 		if ( empty( $encrypted_value ) ) {
 			return '';
 		}
@@ -168,9 +168,9 @@ class Settings {
 	/**
 	 * Get current provider
 	 *
-	 * @return string Provider (openai or anthropic).
+	 * @return string Provider (currently only 'openai').
 	 */
-	public function get_provider() {
+	public function get_provider(): string {
 		return get_option( self::OPTION_PROVIDER, 'openai' );
 	}
 
@@ -179,7 +179,7 @@ class Settings {
 	 *
 	 * @return string Decrypted API key.
 	 */
-	public function get_api_key() {
+	public function get_api_key(): string {
 		$encrypted = get_option( self::OPTION_API_KEY, '' );
 		return $this->decrypt_api_key( $encrypted );
 	}
@@ -189,7 +189,7 @@ class Settings {
 	 *
 	 * @return string Model name.
 	 */
-	public function get_model() {
+	public function get_model(): string {
 		return get_option( self::OPTION_MODEL, 'gpt-5' );
 	}
 }

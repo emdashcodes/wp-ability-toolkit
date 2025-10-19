@@ -8,13 +8,18 @@
 namespace WP_Ability_Toolkit;
 
 /**
- * Base class for AI API clients (OpenAI, Anthropic, etc.)
+ * Base class for AI API clients
  */
 abstract class AI_Client {
 	/**
 	 * Maximum tool call recursion depth
 	 */
 	const MAX_RECURSION_DEPTH = 20;
+
+	/**
+	 * cURL timeout in seconds
+	 */
+	const CURL_TIMEOUT = 60;
 
 	/**
 	 * API key
@@ -68,7 +73,8 @@ abstract class AI_Client {
 	 */
 	protected function check_recursion_limit( $recursion_depth ) {
 		if ( $recursion_depth >= self::MAX_RECURSION_DEPTH ) {
-			$this->send_sse_error( 'Maximum tool execution depth reached (' . self::MAX_RECURSION_DEPTH . ' rounds). This may indicate a complex workflow or a tool execution loop.' );
+			/* translators: %d: Maximum recursion depth number */
+			$this->send_sse_error( sprintf( __( 'Maximum tool execution depth reached (%d rounds). This may indicate a complex workflow or a tool execution loop.', 'wp-ability-toolkit' ), self::MAX_RECURSION_DEPTH ) );
 			echo 'data: ' . wp_json_encode( array( 'done' => true ) ) . "\n\n";
 			flush();
 			return true;

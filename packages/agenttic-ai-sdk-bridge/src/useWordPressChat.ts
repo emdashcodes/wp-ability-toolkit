@@ -21,6 +21,48 @@ import type {
 	ToolCallContent,
 } from './types.js';
 
+/**
+ * Creates a streaming message updater function
+ * @param setMessages - State setter for messages array
+ * @returns Tuple of [updateFunction, getStreamingId]
+ */
+function createStreamingMessageUpdater(
+	setMessages: React.Dispatch<React.SetStateAction<UIMessage[]>>
+): [(content: string) => void, () => string | null] {
+	let streamingMessageId: string | null = null;
+
+	const updateStreamingMessage = (content: string) => {
+		if (!streamingMessageId) {
+			streamingMessageId = `agent-streaming-${Date.now()}`;
+			const streamingMessage: UIMessage = {
+				id: streamingMessageId,
+				role: 'agent',
+				content: [{ type: 'text', text: content }],
+				timestamp: Date.now(),
+				archived: false,
+				showIcon: true,
+				icon: 'assistant',
+			};
+			setMessages((prev) => [...prev, streamingMessage]);
+		} else {
+			setMessages((prev) =>
+				prev.map((msg) =>
+					msg.id === streamingMessageId
+						? {
+								...msg,
+								content: [{ type: 'text', text: content }],
+							}
+						: msg
+				)
+			);
+		}
+	};
+
+	const getStreamingId = () => streamingMessageId;
+
+	return [updateStreamingMessage, getStreamingId];
+}
+
 export function useWordPressChat(
 	config: UseWordPressChatConfig
 ): UseWordPressChatReturn {

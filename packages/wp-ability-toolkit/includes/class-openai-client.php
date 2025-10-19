@@ -99,12 +99,13 @@ class OpenAI_Client extends AI_Client {
 		);
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, false );
 		curl_setopt( $ch, CURLOPT_WRITEFUNCTION, array( $this, 'stream_callback' ) );
-		curl_setopt( $ch, CURLOPT_TIMEOUT, 60 );
+		curl_setopt( $ch, CURLOPT_TIMEOUT, self::CURL_TIMEOUT );
 
 		$result = curl_exec( $ch );
 
 		if ( curl_errno( $ch ) ) {
-			$this->send_sse_error( curl_error( $ch ) );
+			/* translators: %s: cURL error message */
+			$this->send_sse_error( sprintf( __( 'Connection error: %s', 'wp-ability-toolkit' ), curl_error( $ch ) ) );
 		}
 
 		curl_close( $ch );
@@ -137,7 +138,7 @@ class OpenAI_Client extends AI_Client {
 				// Provide user-friendly error message.
 				$user_message = $error_message;
 				if ( strpos( $error_message, 'API key' ) !== false || strpos( $error_message, 'api_key' ) !== false ) {
-					$user_message = 'Invalid API key provided. Please check your API key in the WP Ability Toolkit settings page.';
+					$user_message = __( 'Invalid API key provided. Please check your API key in the WP Ability Toolkit settings page.', 'wp-ability-toolkit' );
 				}
 
 				$this->send_sse_error( $user_message );

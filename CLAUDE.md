@@ -109,9 +109,6 @@ pnpm env:clean
 - `chat-widget/` - Admin chat widget (React, appears in bottom-right)
 - `admin/` - Settings page React components
 - `abilities/` - Client-side WordPress Abilities (TypeScript)
-  - `get-browser-info.ts` - Example client-side ability
-  - `navigate.ts` - Navigation ability for WordPress admin
-  - `index.ts` - Ability registration
 
 ### WordPress Abilities Integration
 
