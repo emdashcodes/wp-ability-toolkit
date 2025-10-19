@@ -22,14 +22,14 @@ function register_think_ability() {
 		'wp-ability-toolkit/think',
 		array(
 			'label'               => __( 'Think', 'wp-ability-toolkit' ),
-			'description'         => __( 'Use this tool to think about something. It will not obtain new information or change the database, but just append the thought to the log. Use it when complex reasoning or some cache memory is needed. Always use markdown formatting in your thoughts.', 'wp-ability-toolkit' ),
+			'description'         => __( 'Use this tool to think about something. It will not obtain new information or change the database, but just append the thought to the log. Use it when complex reasoning or some cache memory is needed. **IMPORTANT**: Always use markdown formatting in your thoughts.', 'wp-ability-toolkit' ),
 			'category'            => 'meta-tools',
 			'input_schema'        => array(
 				'type'       => 'object',
 				'properties' => array(
 					'thought' => array(
 						'type'        => 'string',
-						'description' => 'A thought to think about.',
+						'description' => 'A thought to think about. Always use markdown formatting.',
 					),
 				),
 				'required'   => array( 'thought' ),
