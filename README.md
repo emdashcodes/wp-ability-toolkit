@@ -104,7 +104,7 @@ pnpm env:start
 
 1. Navigate to **Settings > AI Ability Toolkit** in WordPress admin
 2. Enter your OpenAI API key (encrypted before storage)
-3. Choose your model (e.g., `gpt-4o`, `gpt-4-turbo`, or `gpt-4`)
+3. Choose your model (e.g., `gpt-5` or `gpt-4o`)
 4. Save settings
 
 ## Development Workflow
