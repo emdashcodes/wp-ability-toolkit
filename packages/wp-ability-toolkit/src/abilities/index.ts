@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { navigateAbility } from './navigate';
-import { getBrowserInfoAbility } from './get-browser-info';
+import { reloadAbility } from './reload';
 import { debug } from '../debug';
 
 /**
@@ -45,10 +45,10 @@ export async function registerAbilities(): Promise<void> {
 			'[Ability Toolkit] Registered ability: wp-ability-toolkit/navigate'
 		);
 
-		// Register get-browser-info ability
-		await registerAbility(getBrowserInfoAbility);
+		// Register reload ability
+		await registerAbility(reloadAbility);
 		debug(
-			'[Ability Toolkit] Registered ability: wp-ability-toolkit/get-browser-info'
+			'[Ability Toolkit] Registered ability: wp-ability-toolkit/reload'
 		);
 	} catch (error) {
 		console.error('[Ability Toolkit] Failed to register abilities:', error);

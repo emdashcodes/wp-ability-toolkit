@@ -8,8 +8,83 @@ A toolkit for WordPress plugin development, testing AI agent integrations, and W
 ## Features
 
 - **Agent for debugging WordPress Abilities** - Includes an agent for WordPress that allows you to test and debug WordPress Abilities and navigate around your WordPress Admin
+- **Core Abilities** - Built-in abilities for navigation, page reloading, structured thinking, and creating new abilities
 - **OpenAI Support** - OpenAI (GPT-4, GPT-4o, GPT-4-turbo)
 - **Claude Code Skills** - Specialized development skills for plugin creation, validation, and environment management
+
+## Core Abilities
+
+The WP Ability Toolkit includes four built-in abilities that provide essential functionality for the AI assistant. These abilities are as important as the Claude Code plugins and demonstrate the power of the WordPress Abilities API.
+
+### Navigation & Control
+
+#### `navigate`
+**Type:** Client-side (JavaScript)
+**Category:** Navigation
+
+Navigate to different WordPress admin pages. The AI assistant can take you to any wp-admin page with a simple request.
+
+**Example usage:**
+- "Take me to the plugins page"
+- "Navigate to settings"
+- "Go to the dashboard"
+
+**How it works:** Uses absolute paths (e.g., `/wp-admin/plugins.php`) and handles full page navigation with conversation continuation.
+
+#### `reload`
+**Type:** Client-side (JavaScript)
+**Category:** Navigation
+
+Reload the current WordPress admin page. Useful after making changes that require a page refresh, such as activating plugins or registering new abilities.
+
+**Example usage:**
+- "Reload the page"
+- "Refresh this page"
+
+**How it works:** Simple `window.location.reload()` to refresh the current page.
+
+### Meta Tools - Extending Capabilities
+
+#### `think`
+**Type:** Server-side (PHP)
+**Category:** Meta Tools
+
+A structured thinking tool based on [Anthropic's "think" tool pattern](https://www.anthropic.com/engineering/claude-think-tool). Provides dedicated space for the AI to reason through complex problems before taking action.
+
+**When the AI uses it:**
+- Before taking action after receiving tool results
+- When breaking down multi-step problems
+- When verifying requirements are met
+- When brainstorming ability designs
+
+**Example (internal AI usage):**
+```
+User: "Activate the contact form plugin"
+AI uses think: "Need to: 1) Navigate to /wp-admin/plugins.php,
+2) Would need a plugin activation ability (don't have this),
+3) Should use create_ability to make one"
+```
+
+**Why it matters:** Significantly improves the AI's performance on complex tasks, policy compliance, and multi-step workflows.
+
+#### `create_ability`
+**Type:** Server-side (PHP)
+**Category:** Meta Tools
+
+A meta-ability that guides users through creating new WordPress Abilities. This is how you extend the AI assistant's capabilities!
+
+**Example usage:**
+- "I want you to be able to activate plugins"
+- "Can you create an ability to check post count?"
+- "Help me create a new ability"
+
+**How it works:**
+1. Guides the user through the ability creation process
+2. Provides instructions for using the `wordpress-ability-api` Claude Code skill
+3. Helps craft the right prompt for Claude Code
+4. After creation, the new ability becomes available to the AI assistant
+
+**Why it matters:** Turns the AI assistant into a platform you can continuously expand. Don't like what it can't do? Create a new ability!
 
 ## Claude Code Marketplace
 

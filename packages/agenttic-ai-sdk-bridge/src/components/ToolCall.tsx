@@ -14,7 +14,7 @@ import {
 	chevronDown,
 	copySmall,
 } from '@wordpress/icons';
-import { dispatch } from '@wordpress/data';
+import { copyToClipboard } from '../utils/copyToClipboard.js';
 import type { ToolCallContent } from '../types.js';
 
 export interface ToolCallProps {
@@ -70,42 +70,12 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 		}
 	};
 
-	const copyToClipboard = async (
-		text: string,
-		setCopied: (value: boolean) => void,
-		message: string = 'Copied to clipboard'
-	) => {
-		try {
-			await navigator.clipboard.writeText(text);
-			setCopied(true);
-			setTimeout(() => setCopied(false), 2000);
-
-			// Show WordPress toast notification
-			// @ts-ignore - WordPress notices API
-			dispatch('core/notices').createNotice('success', message, {
-				type: 'snackbar',
-				isDismissible: true,
-			});
-		} catch (err) {
-			console.error('Failed to copy:', err);
-			// @ts-ignore - WordPress notices API
-			dispatch('core/notices').createNotice(
-				'error',
-				'Failed to copy to clipboard',
-				{
-					type: 'snackbar',
-					isDismissible: true,
-				}
-			);
-		}
-	};
-
 	return (
 		<div
 			className={`tool-call-wrapper ${getStatusClass()}`}
 			style={{
-				marginTop: '8px',
-				marginBottom: '8px',
+				marginTop: '4px',
+				marginBottom: '4px',
 				border: '1px solid #dcdcde',
 				borderRadius: '4px',
 				overflow: 'hidden',
@@ -122,7 +92,7 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 					display: 'flex',
 					alignItems: 'center',
 					gap: '8px',
-					padding: '10px 14px',
+					padding: '8px 12px',
 					cursor: 'pointer',
 					userSelect: 'none',
 					fontSize: '11px',
@@ -173,7 +143,7 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 				<div
 					className="tool-call-body"
 					style={{
-						padding: '16px',
+						padding: '12px',
 						borderTop: '1px solid #f0f0f1',
 						overflow: 'hidden',
 						minWidth: 0,
@@ -183,7 +153,7 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 					}}
 				>
 					{/* Ability Info Box */}
-					<div style={{ marginBottom: '16px', minWidth: 0 }}>
+					<div style={{ marginBottom: '12px', minWidth: 0 }}>
 						<div
 							style={{
 								fontWeight: 600,
@@ -204,17 +174,13 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 								}
 							>
 								<Button
-									icon={copySmall}
+									icon={copiedInfo ? check : copySmall}
 									size="small"
 									variant="secondary"
 									onClick={(e: React.MouseEvent) => {
 										e.stopPropagation();
 										const infoText = `${toolCall.name}\nID: ${toolCall.id}`;
-										copyToClipboard(
-											infoText,
-											setCopiedInfo,
-											'Ability info copied to clipboard'
-										);
+										copyToClipboard(infoText, setCopiedInfo);
 									}}
 									style={{
 										minWidth: 'auto',
@@ -248,7 +214,7 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 
 					{/* Input */}
 					{toolCall.input && (
-						<div style={{ marginBottom: '16px', minWidth: 0 }}>
+						<div style={{ marginBottom: '12px', minWidth: 0 }}>
 							<div
 								style={{
 									fontWeight: 600,
@@ -269,7 +235,7 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 									}
 								>
 									<Button
-										icon={copySmall}
+										icon={copiedInput ? check : copySmall}
 										size="small"
 										variant="secondary"
 										onClick={(e: React.MouseEvent) => {
@@ -280,8 +246,7 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 													null,
 													2
 												),
-												setCopiedInput,
-												'Input copied to clipboard'
+												setCopiedInput
 											);
 										}}
 										style={{
@@ -316,7 +281,7 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 
 					{/* Output */}
 					{toolCall.status === 'success' && toolCall.output && (
-						<div style={{ marginBottom: '16px', minWidth: 0 }}>
+						<div style={{ marginBottom: '12px', minWidth: 0 }}>
 							<div
 								style={{
 									fontWeight: 600,
@@ -337,7 +302,7 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 									}
 								>
 									<Button
-										icon={copySmall}
+										icon={copiedOutput ? check : copySmall}
 										size="small"
 										variant="secondary"
 										onClick={(e: React.MouseEvent) => {
@@ -353,8 +318,7 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 														);
 											copyToClipboard(
 												outputText,
-												setCopiedOutput,
-												'Output copied to clipboard'
+												setCopiedOutput
 											);
 										}}
 										style={{
@@ -391,7 +355,7 @@ export function ToolCall({ toolCall }: ToolCallProps) {
 
 					{/* Error */}
 					{toolCall.status === 'error' && toolCall.error && (
-						<div style={{ marginBottom: '16px', minWidth: 0 }}>
+						<div style={{ marginBottom: '12px', minWidth: 0 }}>
 							<div
 								style={{
 									fontWeight: 600,

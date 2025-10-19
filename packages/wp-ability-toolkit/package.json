@@ -17,9 +17,14 @@
 		"format": "wp-scripts format"
 	},
 	"dependencies": {
-		"@emdashcodes/agenttic-ai-sdk-bridge": "workspace:*",
 		"@automattic/agenttic-ui": "^0.1.16",
-		"@wordpress/icons": "^11.0.0"
+		"@emdashcodes/agenttic-ai-sdk-bridge": "workspace:*",
+		"@wordpress/a11y": "^4.33.0",
+		"@wordpress/components": "^30.6.0",
+		"@wordpress/element": "^6.33.0",
+		"@wordpress/i18n": "^6.6.0",
+		"@wordpress/icons": "^11.0.0",
+		"react": "^18.3.1"
 	},
 	"devDependencies": {
 		"@types/react": "^18.0.0",

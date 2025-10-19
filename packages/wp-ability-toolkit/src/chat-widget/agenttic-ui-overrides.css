@@ -4,6 +4,16 @@
  */
 
 /* ========================================
+ * Message Spacing
+ * Reduce spacing between messages for tighter layout
+ * ======================================== */
+
+[class*='Message-module_message'],
+[class*='message'] {
+	margin-bottom: 8px !important;
+}
+
+/* ========================================
  * Tool Call Width Constraint Fixes
  * Ensures tool call components don't cause horizontal scrolling
  * ======================================== */
@@ -11,43 +21,91 @@
 /* Constrain message content areas */
 .agentui-message-content,
 .agentui-message-content > *,
-[class*="message"] [class*="content"],
-[class*="Message"] [class*="Content"] {
-  max-width: 100% !important;
-  min-width: 0 !important;
-  overflow-wrap: break-word !important;
+[class*='message'] [class*='content'],
+[class*='Message'] [class*='Content'] {
+	max-width: 100% !important;
+	min-width: 0 !important;
+	overflow-wrap: break-word !important;
 }
 
 /* Ensure component containers don't overflow */
-[class*="component-wrapper"],
-[class*="ComponentWrapper"],
+[class*='component-wrapper'],
+[class*='ComponentWrapper'],
 .component-container {
-  max-width: 100% !important;
-  min-width: 0 !important;
-  overflow: hidden !important;
-  box-sizing: border-box !important;
+	max-width: 100% !important;
+	min-width: 0 !important;
+	overflow: hidden !important;
+	box-sizing: border-box !important;
 }
 
 /* Prevent pre/code blocks from overflowing */
 pre,
 code {
-  max-width: 100% !important;
-  overflow-x: auto !important;
-  white-space: pre !important;
-  box-sizing: border-box !important;
+	max-width: 100% !important;
+	overflow-x: auto !important;
+	white-space: pre !important;
+	box-sizing: border-box !important;
+}
+
+/* Code block copy button styling */
+pre {
+	position: relative !important;
+}
+
+.code-block-copy-btn {
+	position: absolute !important;
+	top: 8px !important;
+	right: 8px !important;
+	background: rgba(0, 0, 0, 0.6) !important;
+	border: 1px solid rgba(255, 255, 255, 0.2) !important;
+	border-radius: 4px !important;
+	padding: 4px 8px !important;
+	cursor: pointer !important;
+	opacity: 0 !important;
+	transition: opacity 0.2s ease !important;
+	color: #fff !important;
+	font-size: 12px !important;
+	display: flex !important;
+	align-items: center !important;
+	gap: 4px !important;
+	z-index: 10 !important;
+}
+
+pre:hover .code-block-copy-btn {
+	opacity: 1 !important;
+}
+
+.code-block-copy-btn:hover {
+	background: rgba(0, 0, 0, 0.8) !important;
+}
+
+.code-block-copy-btn svg {
+	width: 14px !important;
+	height: 14px !important;
+	fill: currentColor !important;
+}
+
+.code-block-copy-btn.copied {
+	background: rgba(0, 163, 42, 0.8) !important;
+	border-color: rgba(0, 163, 42, 0.4) !important;
+}
+
+.code-block-copy-btn.copied svg {
+	width: 16px !important;
+	height: 16px !important;
 }
 
 /* Ensure all flex containers allow shrinking */
-[class*="message"] {
-  min-width: 0 !important;
+[class*='message'] {
+	min-width: 0 !important;
 }
 
 /* Force tool call wrapper to respect container */
 .tool-call-wrapper {
-  max-width: 100% !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
+	max-width: 100% !important;
+	width: 100% !important;
+	min-width: 0 !important;
+	box-sizing: border-box !important;
 }
 
 /* ========================================
@@ -56,39 +114,203 @@ code {
  * ======================================== */
 
 /* Remove grab cursor from floating chat container */
-[class*="Chat-module_container"][class*="Chat-module_floating"] {
-  cursor: auto !important;
+[class*='Chat-module_container'][class*='Chat-module_floating'] {
+	cursor: auto !important;
 }
 
 /* Remove grabbing cursor on active state */
-[class*="Chat-module_container"][class*="Chat-module_floating"]:active {
-  cursor: auto !important;
+[class*='Chat-module_container'][class*='Chat-module_floating']:active {
+	cursor: auto !important;
 }
 
 /* Keep grab cursor only on header */
-[class*="ChatHeader-module_container"] {
-  cursor: grab !important;
+[class*='ChatHeader-module_container'] {
+	cursor: grab !important;
 }
 
-[class*="ChatHeader-module_container"]:active {
-  cursor: grabbing !important;
+[class*='ChatHeader-module_container']:active {
+	cursor: grabbing !important;
 }
 
 /* Ensure normal cursor on all interactive content */
-[class*="Messages-module_container"],
-[class*="Message-module_message"],
-[class*="ChatFooter-module_container"],
-[class*="ChatInput-module_container"],
-[class*="MessageActions-module_container"],
+[class*='Messages-module_container'],
+[class*='Message-module_message'],
+[class*='ChatFooter-module_container'],
+[class*='ChatInput-module_container'],
+[class*='MessageActions-module_container'],
 button,
 a,
-[role="button"] {
-  cursor: auto !important;
+[role='button'] {
+	cursor: auto !important;
 }
 
 /* Override cursor for specific button states */
 button:not(:disabled),
 a,
-[role="button"]:not([aria-disabled="true"]) {
-  cursor: pointer !important;
+[role='button']:not([aria-disabled='true']) {
+	cursor: pointer !important;
+}
+
+/* ========================================
+ * Message Actions Icon Sizing & Positioning
+ * Fix icon size and layout for copy buttons
+ * ======================================== */
+
+/* Allow message action icons to use their component-defined sizes */
+[class*='MessageActions'] svg,
+[class*='MessageAction'] svg,
+[class*='message-actions'] svg {
+	width: auto !important;
+	height: auto !important;
+	max-width: none !important;
+	max-height: none !important;
+}
+
+/* Fix icon sizing in tool calls for consistency */
+.tool-call-wrapper svg,
+.tool-call-header svg,
+.tool-call-body svg {
+	width: 18px !important;
+	height: 18px !important;
+	min-width: 18px !important;
+	min-height: 18px !important;
+	max-width: 18px !important;
+	max-height: 18px !important;
+}
+
+/* Ensure message action buttons are properly sized */
+[class*='MessageActions'] button,
+[class*='MessageAction'] button {
+	padding: 4px !important;
+	min-width: auto !important;
+	width: auto !important;
+	height: auto !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+}
+
+/* Completely hide empty action containers - no space, no layout */
+[class*='Message'] [class*='actions']:empty,
+[class*='Message'] [class*='Actions']:empty,
+[class*='message'] [class*='actions']:empty,
+[class*='message'] [class*='Actions']:empty {
+	display: none !important;
+}
+
+/* Hide action containers with no buttons (but may have wrapper divs) */
+[class*='Message'] [class*='actions']:not(:has(button)),
+[class*='Message'] [class*='Actions']:not(:has(button)),
+[class*='message'] [class*='actions']:not(:has(button)),
+[class*='message'] [class*='Actions']:not(:has(button)) {
+	display: none !important;
+}
+
+/* Hide message actions by default (for containers that DO have buttons) */
+[class*='Message'] [class*='actions']:has(button),
+[class*='Message'] [class*='Actions']:has(button),
+[class*='message'] [class*='actions']:has(button),
+[class*='message'] [class*='Actions']:has(button) {
+	opacity: 0 !important;
+	transition: opacity 0.2s ease !important;
+}
+
+/* Show actions when hovering over the MESSAGE (not just the actions) */
+[class*='Message']:hover [class*='actions']:has(button),
+[class*='Message']:hover [class*='Actions']:has(button),
+[class*='message']:hover [class*='actions']:has(button),
+[class*='message']:hover [class*='Actions']:has(button) {
+	opacity: 1 !important;
+}
+
+/* Always show actions for tool calls */
+.tool-call-wrapper [class*='actions'],
+.tool-call-wrapper [class*='Actions'],
+.tool-call-body button {
+	opacity: 1 !important;
+}
+
+/* Fix user message actions positioning - render outside message bubble */
+/* Position message actions absolutely to right side aligned with message */
+div[class*='user'] {
+	position: relative !important;
+	margin-bottom: 0 !important;
+}
+
+div[class*='user'] div[class*='actions'],
+div[class*='user'] div[class*='Actions'],
+div[class*='user'] [class*='MessageActions'],
+div[class*='user'] [class*='messageActions'] {
+	position: absolute !important;
+	right: 20px !important;
+	bottom: 0 !important;
+	top: auto !important;
+	left: auto !important;
+	transform: translateY(100%) !important;
+	margin: 0 !important;
+	display: flex !important;
+	justify-content: flex-end !important;
+	align-items: center !important;
+	padding: 0 !important;
+	width: auto !important;
+	max-width: fit-content !important;
+}
+
+/* ========================================
+ * WordPress Snackbar Styling & Positioning
+ * Custom styles for snackbar within chat widget
+ * ======================================== */
+
+.components-snackbar-list {
+	position: fixed !important;
+	bottom: 100px !important;
+	right: 30px !important;
+	z-index: 99999999 !important;
+	pointer-events: none !important;
+}
+
+.components-snackbar {
+	position: relative !important;
+	margin: 0 !important;
+	pointer-events: auto !important;
+	background: #1e1e1e !important;
+	color: #fff !important;
+	border-radius: 4px !important;
+	box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4) !important;
+	padding: 12px 16px !important;
+	font-size: 13px !important;
+	font-weight: 500 !important;
+	animation: slideInSnackbar 0.2s ease-out !important;
+}
+
+.components-snackbar__content {
+	margin: 0 !important;
+	padding: 0 !important;
+	color: #fff !important;
+}
+
+.components-snackbar__content-wrapper {
+	display: flex !important;
+	align-items: center !important;
+	gap: 8px !important;
+}
+
+.components-snackbar__dismiss-button {
+	background: transparent !important;
+	border: none !important;
+	color: #fff !important;
+	cursor: pointer !important;
+	padding: 4px !important;
+	margin-left: 8px !important;
+}
+
+@keyframes slideInSnackbar {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }

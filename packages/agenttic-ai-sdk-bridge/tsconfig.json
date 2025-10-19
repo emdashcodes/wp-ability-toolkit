@@ -18,7 +18,7 @@
 		"allowSyntheticDefaultImports": true,
 		"baseUrl": ".",
 		"paths": {
-			"@wordpress/abilities-api": [
+			"@wordpress/abilities": [
 				"../wp-ability-toolkit/vendor/wordpress/abilities-api/packages/client/build-types/index.d.ts"
 			]
 		}

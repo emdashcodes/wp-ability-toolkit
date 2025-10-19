@@ -94,8 +94,8 @@ class Plugin {
 		add_action( 'init', array( 'WP_Abilities_Assets_Init', 'register_assets' ) );
 		add_action( 'admin_enqueue_scripts', array( 'WP_Abilities_Assets_Init', 'admin_enqueue_scripts' ) );
 
-		// Enqueue chat widget in admin.
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_chat_widget' ) );
+
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_chat_widget' ), 20 );
 
 		// Register test categories and abilities.
 		add_action( 'abilities_api_categories_init', array( $this, 'register_test_categories' ) );
@@ -161,14 +161,6 @@ class Plugin {
 				'dependencies' => array( 'wp-element', 'wp-components' ),
 				'version'      => filemtime( $widget_js_path ),
 			);
-
-		// Filter dependencies: replace 'wp-abilities-api' with 'wp-abilities' (the actual registered handle).
-		$widget_asset['dependencies'] = array_map(
-			function( $dep ) {
-				return 'wp-abilities-api' === $dep ? 'wp-abilities' : $dep;
-			},
-			$widget_asset['dependencies']
-		);
 
 		wp_enqueue_script(
 			'wp-ability-toolkit-chat-widget',
@@ -257,7 +249,7 @@ class Plugin {
 	}
 
 	/**
-	 * Register test categories
+	 * Register core ability categories
 	 */
 	public function register_test_categories() {
 		wp_register_ability_category(
@@ -267,49 +259,26 @@ class Plugin {
 				'description' => __( 'Abilities that retrieve and return data without modifying it', 'wp-ability-toolkit' ),
 			)
 		);
+
+		wp_register_ability_category(
+			'meta-tools',
+			array(
+				'label'       => __( 'Meta Tools', 'wp-ability-toolkit' ),
+				'description' => __( 'Meta abilities that help you expand and debug the AI assistant\'s capabilities', 'wp-ability-toolkit' ),
+			)
+		);
 	}
 
 	/**
-	 * Register test abilities for demonstration
+	 * Register core abilities
 	 */
 	public function register_test_abilities() {
-		// Server-side test ability.
-		wp_register_ability(
-			'wp-ability-toolkit/get-wordpress-info',
-			array(
-				'label'               => __( 'Get WordPress Info', 'wp-ability-toolkit' ),
-				'description'         => __( 'Returns information about the WordPress installation including version, site name, and server time', 'wp-ability-toolkit' ),
-				'category'            => 'data-retrieval',
-				'input_schema'        => array(
-					'type'       => 'object',
-					'properties' => array(),
-				),
-				'output_schema'       => array(
-					'type'       => 'object',
-					'properties' => array(
-						'site_name'    => array( 'type' => 'string' ),
-						'wp_version'   => array( 'type' => 'string' ),
-						'server_time'  => array( 'type' => 'string' ),
-						'timezone'     => array( 'type' => 'string' ),
-						'admin_email'  => array( 'type' => 'string' ),
-					),
-				),
-				'execute_callback'    => function () {
-					return array(
-						'site_name'   => get_bloginfo( 'name' ),
-						'wp_version'  => get_bloginfo( 'version' ),
-						'server_time' => current_time( 'mysql' ),
-						'timezone'    => wp_timezone_string(),
-						'admin_email' => get_bloginfo( 'admin_email' ),
-					);
-				},
-				'permission_callback' => function () {
-					return is_user_logged_in();
-				},
-				'meta'                => array(
-					'show_in_rest' => true,
-				),
-			)
-		);
+		// Load server-side abilities from the abilities folder.
+		require_once dirname( $this->plugin_file ) . '/includes/abilities/think.php';
+		require_once dirname( $this->plugin_file ) . '/includes/abilities/create-ability.php';
+
+		// Register server-side abilities.
+		\WP_Ability_Toolkit\Abilities\register_think_ability();
+		\WP_Ability_Toolkit\Abilities\register_create_ability();
 	}
 }

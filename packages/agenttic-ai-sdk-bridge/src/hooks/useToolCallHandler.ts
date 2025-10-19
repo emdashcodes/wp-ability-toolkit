@@ -162,11 +162,13 @@ export function useToolCallHandler(
 			};
 
 			// Check if tool wants to skip continuation
-			const skipContinuation =
+			const skipContinuation = Boolean(
 				toolResult.output &&
-				typeof toolResult.output === 'object' &&
-				'_skipContinuation' in toolResult.output &&
-				toolResult.output._skipContinuation === true;
+					typeof toolResult.output === 'object' &&
+					'_skipContinuation' in toolResult.output &&
+					(toolResult.output as { _skipContinuation?: boolean })
+						._skipContinuation === true
+			);
 
 			return {
 				message: toolResultMessage,

@@ -28,6 +28,30 @@ class Prompt {
 	}
 
 	/**
+	 * Get list of installed plugins with their status
+	 *
+	 * @return array Array of plugin info with name, version, and status.
+	 */
+	private static function get_installed_plugins_list(): array {
+		$all_plugins = get_plugins();
+		$plugin_list = array();
+
+		foreach ( $all_plugins as $plugin_file => $plugin_data ) {
+			$is_active = is_plugin_active( $plugin_file );
+			$status    = $is_active ? 'Active' : 'Inactive';
+
+			$plugin_list[] = sprintf(
+				'  - %s (%s) [%s]',
+				$plugin_data['Name'],
+				$plugin_data['Version'],
+				$status
+			);
+		}
+
+		return $plugin_list;
+	}
+
+	/**
 	 * Get the default system prompt
 	 *
 	 * @param array $client_context Client context data (e.g., url, viewport, etc.).
@@ -39,11 +63,20 @@ class Prompt {
 		$user      = wp_get_current_user();
 		$user_name = $user->display_name;
 
+		// Get current theme info.
+		$current_theme = wp_get_theme();
+		$theme_info    = sprintf(
+			'%s (%s)',
+			$current_theme->get( 'Name' ),
+			$current_theme->get( 'Version' )
+		);
+
 		// Build context section.
 		$context_lines = array(
 			"- Site: {$site_name} ({$site_url})",
 			"- User: {$user_name}",
 			"- WordPress Version: {$GLOBALS['wp_version']}",
+			"- Active Theme: {$theme_info}",
 		);
 
 		// Add current URL if provided in client context.
@@ -52,29 +85,71 @@ class Prompt {
 			$context_lines[] = "- Current Page: {$current_url}";
 		}
 
+		// Add installed plugins.
+		$plugin_list = self::get_installed_plugins_list();
+		if ( ! empty( $plugin_list ) ) {
+			$context_lines[] = "- Installed Plugins:";
+			$context_lines   = array_merge( $context_lines, $plugin_list );
+		}
+
 		$context = implode( "\n", $context_lines );
 
+		$plugin_version = \WP_Ability_Toolkit\Plugin::VERSION;
+
 		return <<<PROMPT
-You are a WordPress Admin assistant helping users manage their WordPress site.
+You are a WordPress Admin assistant powered by the WP Ability Toolkit
 
-## Current Context
-{$context}
+WP Ability Toolkit is a plugin that enables AI-powered WordPress administration through the WordPress Abilities API. You can help users manage their site AND extend your own capabilities by creating new abilities.
 
-## Your Capabilities
+## Your Core Abilities
 
-You have access to WordPress Abilities (tools) that allow you to interact with the site. Available abilities are provided as tools in each request.
+You have access to these built-in WordPress Abilities:
 
-**Common abilities include:**
-- Navigation: Navigate to WordPress admin pages
-- Information retrieval: Get site data, user information, plugin/theme lists
-- Content management: Create, update, or query posts and pages (if available)
+**Navigation & Control:**
+- `navigate` - Navigate to WordPress admin pages (e.g., plugins, settings, posts)
+- `reload` - Reload the current page (useful after making changes)
+
+**Meta Tools - Extend Your Capabilities:**
+- `think` - A structured thinking tool for complex reasoning (use this often!)
+- `create_ability` - Guides users through creating new abilities to expand what you can do
+
+Available abilities are provided as tools in each request. You can see all registered abilities by checking the tools available to you.
+
+## Using the Think Tool
+
+**IMPORTANT:** Use the `think` tool frequently for complex tasks! It helps you:
+- Analyze tool results before taking action
+- Break down multi-step problems
+- Verify policy compliance and requirements
+- Plan your approach to complex requests
+- Brainstorm prompts when using `create_ability`
+
+**When to use `think`:**
+- Before taking action after receiving tool results
+- When navigating complex multi-step workflows
+- When you need to verify all requirements are met
+- Before using `create_ability` - brainstorm the ability design first
+
+**Example think tool usage:**
+```
+User wants to navigate to plugins page and activate a specific plugin
+→ Use think: "Need to: 1) Navigate to /wp-admin/plugins.php, 2) Then would need an ability to activate plugins (don't have this yet), 3) Recommend using create_ability to make one"
+```
+
+## Expanding Your Capabilities
+
+You can help users create new abilities! When a user wants you to do something you can't:
+1. **Use `think`** to brainstorm what the ability should do
+2. **Use `create_ability`** to guide them through creating it
+3. After creation, the new ability will be available to you
 
 ## How to Use Abilities
 
 1. **Understand the request** - Parse what the user wants to accomplish
-2. **Check available tools** - Review the tools provided in this conversation
-3. **Use the right tool** - Call the appropriate ability with correct parameters
-4. **Provide feedback** - Explain what you did and the result
+2. **Think first** - Use `think` for complex or multi-step requests
+3. **Check available tools** - Review the tools provided in this conversation
+4. **Use the right tool** - Call the appropriate ability with correct parameters
+5. **Provide feedback** - Explain what you did and the result
 
 **Example workflow:**
 - User: "Take me to the plugins page"
@@ -123,6 +198,8 @@ Always use absolute paths starting with `/wp-admin/` for WordPress admin pages.
 - User-friendly explanations
 - WordPress best practices focused
 
+## Current Context
+{$context}
 PROMPT;
 	}
 

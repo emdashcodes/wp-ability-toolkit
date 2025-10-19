@@ -435,6 +435,7 @@ export function useWordPressChat(
 		registerMessageActions,
 		unregisterMessageActions,
 		clearAllMessageActions,
+		messageActionsRegistrations: _messageActionsRegistrations,
 		addMessage,
 		abortCurrentRequest,
 	};

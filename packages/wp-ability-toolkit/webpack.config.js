@@ -2,7 +2,36 @@
  * External dependencies
  */
 const defaultConfig = require('@wordpress/scripts/config/webpack.config');
+const DependencyExtractionWebpackPlugin = require('@wordpress/dependency-extraction-webpack-plugin');
 const path = require('path');
+
+// Find and remove the default DependencyExtractionWebpackPlugin
+const plugins = defaultConfig.plugins.filter(
+	(plugin) => !(plugin instanceof DependencyExtractionWebpackPlugin)
+);
+
+// Add custom DependencyExtractionWebpackPlugin
+// Keep defaults but add custom mapping for @wordpress/abilities
+plugins.push(
+	new DependencyExtractionWebpackPlugin({
+		requestToExternal: (request) => {
+			// Custom mapping for WordPress Abilities
+			if (request === '@wordpress/abilities') {
+				return ['wp', 'abilities'];
+			}
+			// Let plugin handle defaults
+			return undefined;
+		},
+		requestToHandle: (request) => {
+			// Map to wp-abilities script handle
+			if (request === '@wordpress/abilities') {
+				return 'wp-abilities';
+			}
+			// Let plugin handle defaults
+			return undefined;
+		},
+	})
+);
 
 module.exports = {
 	...defaultConfig,
@@ -17,14 +46,5 @@ module.exports = {
 		path: path.resolve(__dirname, 'build'),
 		filename: '[name].js',
 	},
-	externals: {
-		react: 'wp.element',
-		'react-dom': 'wp.element',
-		'@wordpress/element': 'wp.element',
-		'@wordpress/i18n': 'wp.i18n',
-		'@wordpress/components': 'wp.components',
-		'@wordpress/api-fetch': 'wp.apiFetch',
-		'@wordpress/data': 'wp.data',
-		'@wordpress/abilities-api': 'wp.abilities',
-	},
+	plugins,
 };

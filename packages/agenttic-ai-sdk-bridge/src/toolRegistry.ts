@@ -3,21 +3,14 @@
  * Manages client-side WordPress abilities as tools
  */
 
+import { getAbilities, executeAbility } from '@wordpress/abilities';
 import type {
 	Ability,
 	AbilityInput,
 	AbilityOutput,
-} from '@wordpress/abilities-api';
+} from '@wordpress/abilities';
 import { debug } from './debug.js';
 import type { ClientAbility } from './types.js';
-
-/**
- * Helper to access WordPress Abilities API from global
- * This avoids import timing issues with webpack externals
- */
-function getAbilitiesAPI() {
-	return (window as any).wp?.abilities;
-}
 
 /**
  * Tool call from AI
@@ -44,17 +37,8 @@ export interface ToolResult {
  */
 export async function getAllClientAbilities(): Promise<ClientAbility[]> {
 	try {
-		// Access abilities API from global to avoid timing issues
-		const api = getAbilitiesAPI();
-		if (!api?.getAbilities) {
-			console.warn(
-				'[Tool Registry] WordPress Abilities API not available yet'
-			);
-			return [];
-		}
-
 		// Get all abilities (server + client)
-		const abilities = await api.getAbilities();
+		const abilities = await getAbilities();
 		debug('[Tool Registry] All abilities:', abilities.length);
 
 		// Filter to only client-side abilities (those with callbacks)
@@ -96,12 +80,6 @@ export async function executeClientAbility(
 	input: AbilityInput
 ): Promise<AbilityOutput> {
 	try {
-		// Access abilities API from global to avoid timing issues
-		const api = getAbilitiesAPI();
-		if (!api?.executeAbility) {
-			throw new Error('WordPress Abilities API not available');
-		}
-
 		// Ensure input is always a plain object (not array, not null)
 		// Arrays and null will be converted to empty object
 		const abilityInput =
@@ -113,7 +91,7 @@ export async function executeClientAbility(
 			abilityInput
 		);
 
-		const result = await api.executeAbility(name, abilityInput);
+		const result = await executeAbility(name, abilityInput);
 		debug(`[Tool Registry] Ability ${name} result:`, result);
 		return result;
 	} catch (error) {

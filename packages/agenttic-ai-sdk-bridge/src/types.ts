@@ -12,7 +12,7 @@ import type {
 	Ability,
 	AbilityInput,
 	AbilityOutput,
-} from '@wordpress/abilities-api';
+} from '@wordpress/abilities';
 
 export interface UIMessage extends AgentticUIMessage {
 	disabled?: boolean;
@@ -132,6 +132,7 @@ export interface UseWordPressChatReturn {
 	registerMessageActions: (registration: MessageActionsRegistration) => void;
 	unregisterMessageActions: (id: string) => void;
 	clearAllMessageActions: () => void;
+	messageActionsRegistrations: MessageActionsRegistration[];
 
 	// Tool integration
 	addMessage: (message: UIMessage) => void;

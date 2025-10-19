@@ -19,6 +19,7 @@ export { debug } from './debug.js';
 // Utilities
 export { parseErrorResponse } from './utils/errorParser.js';
 export { formatToolContent } from './utils/toolFormatter.js';
+export { copyToClipboard } from './utils/copyToClipboard.js';
 
 // Components
 export { ToolCall } from './components/ToolCall.js';

@@ -14,7 +14,6 @@ import {
 	Spinner,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import '@wordpress/components/build-style/style.css';
 
 interface Settings {
 	provider: 'openai';

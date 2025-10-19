@@ -14,10 +14,7 @@ import { copy, check } from '@wordpress/icons';
 import { AgentUI } from '@automattic/agenttic-ui';
 import '@automattic/agenttic-ui/index.css';
 import './agenttic-ui-overrides.css';
-import {
-	useWordPressChat,
-	copyToClipboard,
-} from '@emdashcodes/agenttic-ai-sdk-bridge';
+import { useWordPressChat } from '@emdashcodes/agenttic-ai-sdk-bridge';
 import { retrieveNavigationState, clearNavigationState } from '../abilities';
 import { debug } from '../debug';
 
@@ -185,76 +182,90 @@ export function AbilityChat() {
 		chatProps.registerMessageActions({
 			id: 'copy-message',
 			actions: (message) => {
-				// Debug logging
-				console.log('[Copy Actions] Message:', {
-					id: message.id,
-					role: message.role,
-					disabled: message.disabled,
-					contentTypes: message.content?.map((c) => c.type),
-					hasComponent: message.content?.some(
-						(c) => c.type === 'component'
-					),
-					hasText: message.content?.some(
-						(c) => c.type === 'text' && c.text
-					),
-				});
-
 				// Don't show copy button for tool call messages (they have their own icons)
 				// Tool calls are agent messages with component content
 				if (
 					message.role === 'agent' &&
 					message.content?.some((c) => c.type === 'component')
 				) {
-					console.log('[Copy Actions] Skipping - has component');
 					return [];
 				}
-
-				// Don't show copy button if there's no text content to copy
-				const hasTextContent = message.content?.some(
-					(c) => c.type === 'text' && c.text && c.text.trim().length > 0
-				);
-
-				if (!hasTextContent) {
-					console.log('[Copy Actions] Skipping - no text content');
-					return [];
-				}
-
-				// Don't show if message is disabled (hidden system messages)
-				if (message.disabled) {
-					console.log('[Copy Actions] Skipping - disabled');
-					return [];
-				}
-
-				console.log('[Copy Actions] Showing action for message:', message.id);
-
-				// Show checkmark if this message was just copied
-				const isCopied = copiedMessageId === message.id;
 
 				return [
 					{
 						id: 'copy',
 						icon: createElement(Icon, {
-							icon: isCopied ? check : copy,
-							size: 18,
+							icon: copy,
+							size: 16,
 						}),
 						label: 'Copy',
 						tooltip: 'Copy message text',
 						showLabel: false,
 						onClick: async (msg) => {
-							// Extract text content from message
-							const textContent = msg.content
-								.filter((c) => c.type === 'text' && c.text)
-								.map((c) => c.text)
-								.join('\n');
+							try {
+								// Extract text content from message
+								const textContent = msg.content
+									.filter((c) => c.type === 'text' && c.text)
+									.map((c) => c.text)
+									.join('\n');
 
-							if (textContent) {
-								await copyToClipboard(textContent, () => {
-									setCopiedMessageId(msg.id);
-									// Reset after 2 seconds
-									setTimeout(() => {
-										setCopiedMessageId(null);
-									}, 2000);
-								});
+								if (textContent) {
+									await navigator.clipboard.writeText(
+										textContent
+									);
+
+									// Show toast notification
+									setShowToast(true);
+									setTimeout(() => setShowToast(false), 2000);
+
+									// Add green stroke to SVG paths
+									const button =
+										document.activeElement as HTMLButtonElement;
+									if (button) {
+										const svg = button.querySelector('svg');
+										if (svg) {
+											const paths =
+												svg.querySelectorAll('path');
+											paths.forEach((path) => {
+												// Store original stroke
+												const originalStroke =
+													path.getAttribute(
+														'stroke'
+													) || 'none';
+												const originalStrokeWidth =
+													path.getAttribute(
+														'stroke-width'
+													) || '0';
+
+												// Apply green stroke
+												path.setAttribute(
+													'stroke',
+													'#00a32a'
+												);
+												path.setAttribute(
+													'stroke-width',
+													'2'
+												);
+												path.style.fill = '#00a32a';
+
+												// Restore after 1 second
+												setTimeout(() => {
+													path.setAttribute(
+														'stroke',
+														originalStroke
+													);
+													path.setAttribute(
+														'stroke-width',
+														originalStrokeWidth
+													);
+													path.style.fill = '';
+												}, 1000);
+											});
+										}
+									}
+								}
+							} catch (err) {
+								console.error('Failed to copy message:', err);
 							}
 						},
 					},
@@ -268,7 +279,7 @@ export function AbilityChat() {
 				chatProps.unregisterMessageActions('copy-message');
 			}
 		};
-	}, [chatProps.registerMessageActions, chatProps.unregisterMessageActions, copiedMessageId]);
+	}, [chatProps.registerMessageActions, chatProps.unregisterMessageActions]);
 
 	// Compute messages with actions applied
 	const messagesWithActions = useMemo(() => {
@@ -292,15 +303,22 @@ export function AbilityChat() {
 	}, [chatProps.messages, chatProps.messageActionsRegistrations]);
 
 	return (
-		<div style={{ position: 'relative' }}>
-			<AgentUI
-				{...chatProps}
-				messages={messagesWithActions}
-				variant="floating"
-				placeholder="Ask me anything..."
-				expandOnClick={true}
-				floatingChatState={shouldExpand ? 'expanded' : undefined}
-			/>
-		</div>
+		<>
+			<div style={{ position: 'relative' }}>
+				<AgentUI
+					{...chatProps}
+					messages={messagesWithActions}
+					variant="floating"
+					placeholder="Ask me anything..."
+					expandOnClick={true}
+					floatingChatState={shouldExpand ? 'expanded' : undefined}
+				/>
+			</div>
+			{showToast &&
+				createPortal(
+					<div className="wp-ability-toast">Copied to clipboard</div>,
+					document.body
+				)}
+		</>
 	);
 }

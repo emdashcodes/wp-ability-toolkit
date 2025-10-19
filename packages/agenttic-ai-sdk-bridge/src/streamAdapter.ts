@@ -2,7 +2,7 @@
  * Adapts WordPress REST API streaming responses to Agenttic UI format
  */
 
-import type { AbilityInput, AbilityOutput } from '@wordpress/abilities-api';
+import type { AbilityInput, AbilityOutput } from '@wordpress/abilities';
 import type { OpenAIToolCall } from './types.js';
 
 export interface ToolCallEvent {
