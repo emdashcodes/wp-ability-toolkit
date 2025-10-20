@@ -12,7 +12,7 @@ interface SerializableMessage {
 	id: string;
 	role: 'user' | 'agent';
 	content: Array<{
-		type: 'text' | 'image_url' | 'component';
+		type: 'text' | 'image_url' | 'component' | 'context';
 		text?: string;
 		image_url?: string;
 		// For component type, we store the component data instead of the component itself
