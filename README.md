@@ -5,6 +5,8 @@ A toolkit for WordPress plugin development, testing AI agent integrations, and W
 - **Claude Code Marketplace** - Specialized skills for WordPress development, WordPress environment management, and WordPress Ability creation.
 - **Toolkit for WordPress** - A workspace for building WordPress Abilities and plugins.
 
+[Project Page](https://emdash.codes/wp-ability-toolkit/)
+
 ## Features
 
 - **Agent for debugging WordPress Abilities** - Includes an agent for WordPress that allows you to test and debug WordPress Abilities and navigate around your WordPress Admin.
@@ -12,7 +14,7 @@ A toolkit for WordPress plugin development, testing AI agent integrations, and W
 - **OpenAI Support** - OpenAI (GPT-4, GPT-4o)
 - **Claude Code Skills** - Specialized development skills for plugin creation, validation, and environment management
 
-[Watch a ~6 minute demo of the toolkit in action](https://emdash.codes/wp-ability-toolkit).
+[See a ~6 minute demo of the toolkit in action](https://emdash.codes/wp-ability-toolkit).
 
 ## WordPress Abilities
 
